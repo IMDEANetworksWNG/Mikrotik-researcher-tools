@@ -41,6 +41,9 @@ engenius,ens620ext)
 	ucidef_set_led_netdev "lan1" "LAN1" "${boardname}:green:lan1" "eth0"
 	ucidef_set_led_netdev "lan2" "LAN2" "${boardname}:green:lan2" "eth1"
 	;;
+mikrotik,lhgg-60ad)
+	ucidef_set_led_wlan "wlan" "WLAN" "${boardname}:green:wlan" "phy0tpt"
+	;;
 netgear,ex6100v2 |\
 netgear,ex6150v2)
 	ucidef_set_led_wlan "wlan2g" "WLAN2G" "ex61x0v2:green:router" "phy0tpt"
