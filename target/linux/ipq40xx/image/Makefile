@@ -22,6 +22,7 @@ define Build/ipq-aux-loader-common
 		TEXT_BASE2="0x00000000" \
 		BOARD="$(BOARDNAME)" PLATFORM="$(PLATFORM)" \
 		BLOCKSIZE="$(BLOCKSIZE)" PAGESIZE="$(PAGESIZE)" \
+		UART="$(AUX_LOADER_UART)"	\
 		$(1) LOADER_TYPE=$(2) compile loader.$(2)
 	mv "$@.$(2)" "$@"
 	rm -rf $@.src
@@ -262,6 +263,7 @@ define Device/MikrotikNOR
 	$(call Device/FitImageLzma)
 	BLOCKSIZE := 64k
 	IMAGE_SIZE := 16128k
+	AUX_LOADER_UART := NONE
 	KERNEL_INITRAMFS_SUFFIX := -fit-uImage.elf
 	PLATFORM := mikrotik-ipq4xxx
 	KERNEL = kernel-bin | lzma | fit lzma $$(DTS_DIR)/$$(DEVICE_DTS).dtb | ipq-aux-loader-kernel elf
