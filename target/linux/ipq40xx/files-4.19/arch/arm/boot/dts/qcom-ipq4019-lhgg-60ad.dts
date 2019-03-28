@@ -108,39 +108,39 @@
 		compatible = "gpio-leds";
 
 		power: power {
-			label = "rb450gx4:blue:power";
+			label = "lhgg-60ad:blue:power";
 			gpios = <&tlmm 0 GPIO_ACTIVE_HIGH>;
 			default-state = "keep";
 			panic-indicator;
 		};
 
 		user: user {
-			label = "rb450gx4:green:user";
+			label = "lhgg-60ad:yellow:user";
 			gpios = <&tlmm 3 GPIO_ACTIVE_HIGH>;
 		};
 
 		wlan {
-			label = "rb450gx4:green:wlan";
+			label = "lhgg-60ad:green:wlan";
 			gpios = <&tlmm 58 GPIO_ACTIVE_HIGH>;
 		};
 
 		align-left {
-			label = "rb450gx4:green:align-left";
+			label = "lhgg-60ad:green:align-left";
 			gpios = <&tlmm 1 GPIO_ACTIVE_HIGH>;
 		};
 
 		align-right {
-			label = "rb450gx4:green:align-right";
+			label = "lhgg-60ad:green:align-right";
 			gpios = <&tlmm 2 GPIO_ACTIVE_HIGH>;
 		};
 
 		wlan-rx {
-			label = "rb450gx4:green:wlan-rx";
+			label = "lhgg-60ad:green:wlan-rx";
 			gpios = <&tlmm 4 GPIO_ACTIVE_HIGH>;
 		};
 
 		wlan-tx {
-			label = "rb450gx4:green:wlan-tx";
+			label = "lhgg-60ad:green:wlan-tx";
 			gpios = <&tlmm 5 GPIO_ACTIVE_HIGH>;
 		};
 	};
