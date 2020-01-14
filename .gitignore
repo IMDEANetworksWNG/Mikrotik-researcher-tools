@@ -12,7 +12,6 @@
 /logs
 /feeds
 /feeds.conf
-/overlay
 /package/feeds
 /package/openwrt-packages
 key-build*
