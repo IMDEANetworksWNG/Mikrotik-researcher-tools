@@ -43,6 +43,8 @@ Features:
 
 ### How to flash the image
 
+**Note:** If you don't want to build the imade, you can download it from [here](https://github.com/pjimenezmateo/openwrt/releases/tag/v17.01.4)
+
 1. ssh into the device and put it in Etherboot
 
     ```bash
