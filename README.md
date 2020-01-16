@@ -34,16 +34,18 @@ Features:
     * In Target system, select Qualcomm Atheros IPQ40XX
     * In Target Profile, select MikroTik Wireless Wire Dish LHGG-60ad
 
-5. The image will be in 
+5. The image will have 2 files:
 
     ```bash
     ./build_dir/target-arm_cortex-a7+neon-vfpv4_musl_eabi/linux-ipq40xx/tmp/openwrt-ipq40xx-mikrotik_lhgg-60ad-initramfs-fit-uImage.elf
+    ./build_dir/target-arm_cortex-a7+neon-vfpv4_musl_eabi/linux-ipq40xx/tmp/openwrt-ipq40xx-mikrotik_lhgg-60ad-squashfs-sysupgrade.bin
     ```
-6. Rename the image to vmlinux
+6. Rename the first file to vmlinux and the second to sysupgrade.bin for the next steps.
 
 ### How to flash the image
 
-**Note:** If you don't want to build the imade, you can download it from [here](https://github.com/pjimenezmateo/openwrt/releases/tag/v17.01.4)
+**Note:** If you don't want to build the image, you can download both files from [here](https://github.com/pjimenezmateo/openwrt/releases/tag/v17.01.4)
+**Note:** If you only use the initramfs image, it will be like a live CD, nothing will be modified on the device and the Mikrotik OS will be restored on reboot.
 
 1. ssh into the device and put it in Etherboot
 
@@ -105,6 +107,20 @@ Features:
     sudo /etc/init.d/isc-dhcp-server stop
     sudo /etc/init.d/tftpd-hpa stop
     ```
+
+### How to make the flash permanent
+
+1. Once flashed with the initramfs upload the sysupgrade file
+
+    ```bash
+    scp sysupgrade.bin root@192.168.1.1:/tmp
+    ```
+2. Flash it
+
+    ```bash
+    /sbin/sysupgrade sysupgrade.bin
+    ```
+3. Wait until ssh works again (around 5 minutes)
 
 ### How to start the AP and STA
 
