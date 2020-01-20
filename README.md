@@ -4,7 +4,7 @@ Features:
 
 * Comes patched with all the features from [LEDE-ad7200](https://github.com/seemoo-lab/lede-ad7200)
 * Imported the wil6210.fw (version 5.2.0.18) with sector information by default compiled with [nexmon-arc](https://github.com/seemoo-lab/nexmon-arc)
-* Mikrotik brd file from Mirkotik OS version 6.43.12
+* Mikrotik brd file from Mikrotik OS version 6.43.12
 * iperf3 is installed by default
 
 ### How to build from source
@@ -48,7 +48,7 @@ Features:
 
 **Note:** If you only use the initramfs image, it will be like a live CD, nothing will be modified on the device and the Mikrotik OS will be restored on reboot.
 
-1. ssh into the device and put it in Etherboot
+1. ssh into the device and set it to Etherboot
 
     ```bash
     ssh admin@192.168.88.2
@@ -71,7 +71,7 @@ Features:
     ```bash
     sudo apt install isc-dhcp-server
     ```
-5. Append the following lines on the DHCP server config 
+5. Append the following lines to the DHCP server config 
     
     **NOTE:** Change the MAC
 
