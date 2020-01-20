@@ -11,7 +11,7 @@ Features:
 
 1. Get the files
     ```bash
-    git git@github.com:pjimenezmateo/openwrt.git
+    git@github.com:IMDEANetworksWNG/Mikrotik-researcher-tools.git
     cd openwrt/
     ```
     
@@ -44,7 +44,8 @@ Features:
 
 ### How to flash the image
 
-**Note:** If you don't want to build the image, you can download both files from [here](https://github.com/pjimenezmateo/openwrt/releases/tag/v17.01.4)
+**Note:** If you don't want to build the image, you can download both files from [here](https://github.com/IMDEANetworksWNG/Mikrotik-researcher-tools/releases/tag/latest)
+
 **Note:** If you only use the initramfs image, it will be like a live CD, nothing will be modified on the device and the Mikrotik OS will be restored on reboot.
 
 1. ssh into the device and put it in Etherboot
@@ -55,7 +56,8 @@ Features:
     ```
     
 2. Install TFTP boot
-    NOTE: [Extra info](https://wiki.mikrotik.com/wiki/Manual:Netinstall)
+
+    **NOTE:** [Extra info](https://wiki.mikrotik.com/wiki/Manual:Netinstall)
     ```bash
     sudo apt update; sudo apt install tftp-hpa tftpd-hpa
     sudo ufw allow tftp
@@ -69,7 +71,9 @@ Features:
     ```bash
     sudo apt install isc-dhcp-server
     ```
-5. Append the following lines on the DHCP server config **Change the MAC**
+5. Append the following lines on the DHCP server config 
+    
+    **NOTE:** Change the MAC
 
     ```bash
     #File /etc/dhcp/dhcpd.conf
@@ -87,7 +91,7 @@ Features:
     
     
     host mikrotik {
-      hardware ethernet cc:2d:e0:9c:e2:35; #IMPORTANT: Change this MAC by the one in  your device
+      hardware ethernet cc:2d:e0:9c:e2:35; #IMPORTANT: Change this MAC by the one of your device
       fixed-address 192.168.88.3;
     }
     ```
