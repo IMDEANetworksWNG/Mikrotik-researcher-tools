@@ -130,7 +130,7 @@ Features:
 
 1. In the STA
     ```bash
-    wpa_supplicant -D nl80211  -i wlan2 -c /etc/wpa_supplicant.conf -B
+    wpa_supplicant -D nl80211  -i wlan0 -c /etc/wpa_supplicant.conf -B
     ```
 2. In the AP
     ```bash
