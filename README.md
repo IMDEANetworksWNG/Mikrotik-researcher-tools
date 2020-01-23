@@ -1,4 +1,4 @@
-# Researcher version of Openwrt for wAP 60G
+# Researcher version of Openwrt for wAP 60G/LHGG-60ad/wAP 60Gx3 AP
 
 Features:
 
