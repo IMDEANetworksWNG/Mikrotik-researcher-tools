@@ -7,6 +7,8 @@ Features:
 * Mikrotik brd file from Mikrotik OS version 6.43.12
 * iperf3 is installed by default
 
+**NOTE:** You can download the prebuilt images and skip the "How to build from source" section, prebuilt images can be found [here.](https://github.com/IMDEANetworksWNG/Mikrotik-researcher-tools/releases)
+
 ### How to build from source
 
 1. Get the files
@@ -44,7 +46,7 @@ Features:
 
 ### How to flash the image
 
-**Note:** If you don't want to build the image, you can download both files from [here](https://github.com/IMDEANetworksWNG/Mikrotik-researcher-tools/releases/tag/latest)
+**Note:** If you don't want to build the image, you can download both files from [here.](https://github.com/IMDEANetworksWNG/Mikrotik-researcher-tools/releases/)
 
 **Note:** If you only use the initramfs image, it will be like a live CD, nothing will be modified on the device and the Mikrotik OS will be restored on reboot.
 
