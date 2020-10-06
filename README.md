@@ -14,7 +14,7 @@ Features:
 1. Get the files
     ```bash
     git@github.com:IMDEANetworksWNG/Mikrotik-researcher-tools.git
-    cd openwrt/
+    cd Mikrotik-researcher-tools/
     ```
     
 2. Update the feeds
