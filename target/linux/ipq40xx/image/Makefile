@@ -277,7 +277,7 @@ define Device/mikrotik_lhgg-60ad
 	$(call Device/MikrotikNOR)
 	DEVICE_DTS := qcom-ipq4019-lhgg-60ad
 	DEVICE_TITLE := MikroTik Wireless Wire Dish LHGG-60ad
-	DEVICE_PACKAGES += -kmod-ath10k-ct -ath10k-firmware-qca4019-ct kmod-wil6210 rssileds iperf3
+	DEVICE_PACKAGES += -kmod-ath10k-ct -ath10k-firmware-qca4019-ct kmod-wil6210 rssileds iperf3 iw-full
 endef
 TARGET_DEVICES += mikrotik_lhgg-60ad
 

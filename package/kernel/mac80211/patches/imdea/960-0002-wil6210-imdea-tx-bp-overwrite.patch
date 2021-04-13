@@ -1,6 +1,341 @@
+diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/ath/wil6210/cfg80211.c
+--- a/drivers/net/wireless/ath/wil6210/cfg80211.c	2019-02-15 20:40:00.000000000 +0100
++++ b/drivers/net/wireless/ath/wil6210/cfg80211.c	2020-12-14 10:59:20.291593879 +0100
+@@ -674,9 +674,19 @@ static int wil_cfg80211_change_iface(str
+ 	return 0;
+ }
+ 
++
++struct cfg80211_scan_request *my_glob_request = NULL;
++struct wiphy *my_glob_wiphy = NULL;
++
+ static int wil_cfg80211_scan(struct wiphy *wiphy,
+ 			     struct cfg80211_scan_request *request)
+ {
++
++	printk(KERN_CRIT "wil_cfg80211_scan\n");
++	my_glob_request = request;
++	my_glob_wiphy = wiphy;
++
++
+ 	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
+ 	struct wireless_dev *wdev = request->wdev;
+ 	struct wil6210_vif *vif = wdev_to_vif(wil, wdev);
+@@ -703,6 +713,8 @@ static int wil_cfg80211_scan(struct wiph
+ 	/* FW don't support scan after connection attempt */
+ 	if (test_bit(wil_status_dontscan, wil->status)) {
+ 		wil_err(wil, "Can't scan now\n");
++		printk(KERN_CRIT "Can't scan now\n");
++
+ 		return -EBUSY;
+ 	}
+ 
+@@ -711,6 +723,8 @@ static int wil_cfg80211_scan(struct wiph
+ 	mutex_lock(&wil->vif_mutex);
+ 	if (vif->scan_request || vif->p2p.discovery_started) {
+ 		wil_err(wil, "Already scanning\n");
++		printk(KERN_CRIT "Already scanning\n");
++
+ 		mutex_unlock(&wil->vif_mutex);
+ 		rc = -EAGAIN;
+ 		goto out;
+@@ -782,13 +796,19 @@ static int wil_cfg80211_scan(struct wiph
+ 		cmd.cmd.channel_list[cmd.cmd.num_channels++].channel = ch - 1;
+ 		wil_dbg_misc(wil, "Scan for ch %d  : %d MHz\n", ch,
+ 			     request->channels[i]->center_freq);
++		printk(KERN_CRIT "Scan for ch %d  : %d MHz\n", ch,
++			     request->channels[i]->center_freq);
++
+ 	}
+ 
+ 	if (request->ie_len)
+ 		wil_hex_dump_misc("Scan IE ", DUMP_PREFIX_OFFSET, 16, 1,
+ 				  request->ie, request->ie_len, true);
+-	else
++	else {
+ 		wil_dbg_misc(wil, "Scan has no IE's\n");
++		printk(KERN_CRIT "Scan has no IE's\n");
++
++	}
+ 
+ 	rc = wmi_set_ie(vif, WMI_FRAME_PROBE_REQ,
+ 			request->ie_len, request->ie);
+@@ -798,8 +818,78 @@ static int wil_cfg80211_scan(struct wiph
+ 	if (wil->discovery_mode && cmd.cmd.scan_type == WMI_ACTIVE_SCAN) {
+ 		cmd.cmd.discovery_mode = 1;
+ 		wil_dbg_misc(wil, "active scan with discovery_mode=1\n");
++		printk(KERN_CRIT "active scan with discovery_mode=1\n");
+ 	}
+ 
++	// Print request information
++	//int i;
++
++	//for(i=0; i<request->n_ssids; i++) {
++	//	printk(KERN_CRIT "ssid[%d]: %d\n", i, request->ssids[i]);
++	//}
++//
++	//printk(KERN_CRIT "n_ssids %d\n", request->n_ssids);
++	//printk(KERN_CRIT "channels %d\n", request->channels);
++	//printk(KERN_CRIT "scan_width %d\n", request->scan_width);
++	//printk(KERN_CRIT "ie_len %d\n", request->ie_len);
++	//printk(KERN_CRIT "duration %d\n", request->duration);
++	//printk(KERN_CRIT "duration_mandatory %d\n", request->duration_mandatory);
++	//printk(KERN_CRIT "flags %d\n", request->flags);
++//
++	//
++	//for(i=0; i<NUM_NL80211_BANDS; i++) {
++	//	printk(KERN_CRIT "rate[%d]: %d\n", i, request->rates[i]);
++	//}
++//
++	//printk(KERN_CRIT "MAC addr(%pM) \n", request->mac_addr);
++	//printk(KERN_CRIT "MAC addr mask(%pM) \n", request->mac_addr_mask);
++	//printk(KERN_CRIT "BSSID(%pM) \n", request->bssid);
++
++	/**
++	 * struct cfg80211_scan_request - scan request description
++	 *
++	 * @ssids: SSIDs to scan for (active scan only)
++	 * @n_ssids: number of SSIDs
++	 * @channels: channels to scan on.
++	 * @n_channels: total number of channels to scan
++	 * @scan_width: channel width for scanning
++	 * @ie: optional information element(s) to add into Probe Request or %NULL
++	 * @ie_len: length of ie in octets
++	 * @duration: how long to listen on each channel, in TUs. If
++	 *	%duration_mandatory is not set, this is the maximum dwell time and
++	 *	the actual dwell time may be shorter.
++	 * @duration_mandatory: if set, the scan duration must be as specified by the
++	 *	%duration field.
++	 * @flags: bit field of flags controlling operation
++	 * @rates: bitmap of rates to advertise for each band
++	 * @wiphy: the wiphy this was for
++	 * @scan_start: time (in jiffies) when the scan started
++	 * @wdev: the wireless device to scan for
++	 * @info: (internal) information about completed scan
++	 * @notified: (internal) scan request was notified as done or aborted
++	 * @no_cck: used to send probe requests at non CCK rate in 2GHz band
++	 * @mac_addr: MAC address used with randomisation
++	 * @mac_addr_mask: MAC address mask used with randomisation, bits that
++	 *	are 0 in the mask should be randomised, bits that are 1 should
++	 *	be taken from the @mac_addr
++	 * @bssid: BSSID to scan for (most commonly, the wildcard BSSID)
++	 */
++
++	// Serialize the request
++	//unsigned char req[sizeof(struct cfg80211_scan_request)];
++	//memcpy(req, &request, sizeof(struct cfg80211_scan_request));
++//
++	//// Print it
++	//printk(KERN_CRIT "DATA START\n");
++//
++	//for (i=0; i<sizeof(struct cfg80211_scan_request); i++) {
++//
++//
++	//	printk(KERN_CRIT "%08x\n", req[i]);
++	//}
++	//printk(KERN_CRIT "DATA END\n");
++
++
+ 	if (vif->mid == 0)
+ 		wil->radio_wdev = wdev;
+ 	rc = wmi_send(wil, WMI_START_SCAN_CMDID, vif->mid,
+@@ -818,9 +908,163 @@ out:
+ 	return rc;
+ }
+ 
++int wil_cfg80211_scan_fast(struct wiphy *wiphy)
++{
++
++	if (my_glob_request != NULL) {
++
++		my_glob_request->wiphy = wiphy;
++		struct wil6210_priv *wil = wiphy_to_wil(wiphy);
++		struct wireless_dev *wdev = my_glob_request->wdev;
++		struct wil6210_vif *vif = wdev_to_vif(wil, wdev);
++		struct {
++			struct wmi_start_scan_cmd cmd;
++			u16 chnl[4];
++		} __packed cmd;
++		uint i, n;
++		int rc;
++
++		wil_dbg_misc(wil, "scan: wdev=0x%p iftype=%d\n", wdev, wdev->iftype);
++
++		/* scan is supported on client interfaces and on AP interface */
++		switch (wdev->iftype) {
++		case NL80211_IFTYPE_STATION:
++		case NL80211_IFTYPE_P2P_CLIENT:
++		case NL80211_IFTYPE_P2P_DEVICE:
++		case NL80211_IFTYPE_AP:
++			break;
++		default:
++			return -EOPNOTSUPP;
++		}
++
++		/* FW don't support scan after connection attempt */
++		if (test_bit(wil_status_dontscan, wil->status)) {
++			wil_err(wil, "Can't scan now\n");
++			return -EBUSY;
++		}
++
++		mutex_lock(&wil->mutex);
++
++		mutex_lock(&wil->vif_mutex);
++		if (vif->scan_request || vif->p2p.discovery_started) {
++			wil_err(wil, "Already scanning\n");
++			mutex_unlock(&wil->vif_mutex);
++			rc = -EAGAIN;
++			goto out;
++		}
++		mutex_unlock(&wil->vif_mutex);
++
++		if (wdev->iftype == NL80211_IFTYPE_P2P_DEVICE) {
++			if (!wil->p2p_dev_started) {
++				wil_err(wil, "P2P search requested on stopped P2P device\n");
++				rc = -EIO;
++				goto out;
++			}
++			/* social scan on P2P_DEVICE is handled as p2p search */
++			if (wil_p2p_is_social_scan(my_glob_request)) {
++				vif->scan_request = my_glob_request;
++				if (vif->mid == 0)
++					wil->radio_wdev = wdev;
++				rc = wil_p2p_search(vif, my_glob_request);
++				if (rc) {
++					if (vif->mid == 0)
++						wil->radio_wdev =
++							wil->main_ndev->ieee80211_ptr;
++					vif->scan_request = NULL;
++				}
++				goto out;
++			}
++		}
++
++		(void)wil_p2p_stop_discovery(vif);
++
++		wil_dbg_misc(wil, "Start scan_request 0x%p\n", my_glob_request);
++		wil_dbg_misc(wil, "SSID count: %d", my_glob_request->n_ssids);
++
++		for (i = 0; i < my_glob_request->n_ssids; i++) {
++			wil_dbg_misc(wil, "SSID[%d]", i);
++			wil_hex_dump_misc("SSID ", DUMP_PREFIX_OFFSET, 16, 1,
++					  my_glob_request->ssids[i].ssid,
++					  my_glob_request->ssids[i].ssid_len, true);
++		}
++
++		if (my_glob_request->n_ssids)
++			rc = wmi_set_ssid(vif, my_glob_request->ssids[0].ssid_len,
++					  my_glob_request->ssids[0].ssid);
++		else
++			rc = wmi_set_ssid(vif, 0, NULL);
++
++		if (rc) {
++			wil_err(wil, "set SSID for scan request failed: %d\n", rc);
++			goto out;
++		}
++
++		vif->scan_request = my_glob_request;
++		mod_timer(&vif->scan_timer, jiffies + WIL6210_SCAN_TO);
++
++		memset(&cmd, 0, sizeof(cmd));
++		cmd.cmd.scan_type = WMI_ACTIVE_SCAN;
++		cmd.cmd.num_channels = 0;
++		n = min(my_glob_request->n_channels, 4U);
++		for (i = 0; i < n; i++) {
++			int ch = my_glob_request->channels[i]->hw_value;
++
++			if (ch == 0) {
++				wil_err(wil,
++					"Scan requested for unknown frequency %dMhz\n",
++					my_glob_request->channels[i]->center_freq);
++				continue;
++			}
++			/* 0-based channel indexes */
++			cmd.cmd.channel_list[cmd.cmd.num_channels++].channel = ch - 1;
++			wil_dbg_misc(wil, "Scan for ch %d  : %d MHz\n", ch,
++				     my_glob_request->channels[i]->center_freq);
++		}
++
++		if (my_glob_request->ie_len)
++			wil_hex_dump_misc("Scan IE ", DUMP_PREFIX_OFFSET, 16, 1,
++					  my_glob_request->ie, my_glob_request->ie_len, true);
++		else
++			wil_dbg_misc(wil, "Scan has no IE's\n");
++
++		rc = wmi_set_ie(vif, WMI_FRAME_PROBE_REQ,
++				my_glob_request->ie_len, my_glob_request->ie);
++		if (rc)
++			goto out_restore;
++
++		if (wil->discovery_mode && cmd.cmd.scan_type == WMI_ACTIVE_SCAN) {
++			cmd.cmd.discovery_mode = 1;
++			wil_dbg_misc(wil, "active scan with discovery_mode=1\n");
++		}
++
++		if (vif->mid == 0)
++			wil->radio_wdev = wdev;
++		rc = wmi_send(wil, WMI_START_SCAN_CMDID, vif->mid,
++			      &cmd, sizeof(cmd.cmd) +
++			      cmd.cmd.num_channels * sizeof(cmd.cmd.channel_list[0]));
++
++	out_restore:
++		if (rc) {
++			del_timer_sync(&vif->scan_timer);
++			if (vif->mid == 0)
++				wil->radio_wdev = wil->main_ndev->ieee80211_ptr;
++			vif->scan_request = NULL;
++		}
++	out:
++		mutex_unlock(&wil->mutex);
++		return rc;
++	} else {
++
++		printk(KERN_CRIT "my_glob_request is NULL\n");
++	}
++}
++
+ static void wil_cfg80211_abort_scan(struct wiphy *wiphy,
+ 				    struct wireless_dev *wdev)
+ {
++
++	printk(KERN_CRIT "wil_cfg80211_abort_scan\n");
++
+ 	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
+ 	struct wil6210_vif *vif = wdev_to_vif(wil, wdev);
+ 
+@@ -1973,6 +2217,9 @@ wil_cfg80211_sched_scan_start(struct wip
+ 			      struct net_device *dev,
+ 			      struct cfg80211_sched_scan_request *request)
+ {
++
++	printk(KERN_CRIT "wil_cfg80211_sched_scan_start\n");
++
+ 	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
+ 	struct wil6210_vif *vif = ndev_to_vif(dev);
+ 	int i, rc;
+@@ -2024,6 +2271,9 @@ static int
+ wil_cfg80211_sched_scan_stop(struct wiphy *wiphy, struct net_device *dev,
+ 			     u64 reqid)
+ {
++
++	printk(KERN_CRIT "wil_cfg80211_sched_scan_stop\n");
++
+ 	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
+ 	struct wil6210_vif *vif = ndev_to_vif(dev);
+ 	int rc;
+@@ -2392,6 +2642,9 @@ static int wil_rf_sector_set_cfg(struct
+ 				 struct wireless_dev *wdev,
+ 				 const void *data, int data_len)
+ {
++
++	printk(KERN_CRIT "[GEF] wil_rf_sector_set_cfg\n");
++
+ 	struct wil6210_priv *wil = wdev_to_wil(wdev);
+ 	struct wil6210_vif *vif = wdev_to_vif(wil, wdev);
+ 	int rc, tmp;
 diff -rupN a/drivers/net/wireless/ath/wil6210/debugfs.c b/drivers/net/wireless/ath/wil6210/debugfs.c
 --- a/drivers/net/wireless/ath/wil6210/debugfs.c	2020-11-20 16:49:15.074498000 +0100
-+++ b/drivers/net/wireless/ath/wil6210/debugfs.c	2020-11-25 17:51:27.303334857 +0100
++++ b/drivers/net/wireless/ath/wil6210/debugfs.c	2020-12-11 12:05:27.822569203 +0100
 @@ -28,6 +28,9 @@
   /* SEEMOO shared header between driver and fw */
  #include "sweep_info.h"
@@ -11,7 +346,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/debugfs.c b/drivers/net/wireless/a
  /* Nasty hack. Better have per device instances */
  static u32 mem_addr;
  static u32 dbg_txdesc_index;
-@@ -2516,11 +2519,98 @@ sweep_dump_open(struct inode *inode, str
+@@ -2516,65 +2519,323 @@ sweep_dump_open(struct inode *inode, str
      return single_open(file, sweep_dump_show, inode->i_private);
  }
  static const struct file_operations fops_sweep_dump = {
@@ -62,8 +397,183 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/debugfs.c b/drivers/net/wireless/a
 +
 +	kfree(kbuf);
 +
-+	// Copy the new BP to memory
-+	wil_memcpy_toio_32((void * __force)my_glob_wil->csr + HOSTADDR(PTR_MEM_RX_BP), (void *) &new_rx_bp, sizeof(new_rx_bp));
++	int i;
++
++	for (i=0; i < 64*24; i+=24) {
++		// Copy the new BP to memory
++		wil_memcpy_toio_32((void * __force)my_glob_wil->csr + HOSTADDR(PTR_MEM_RX_BP + i), (void *) &new_rx_bp, sizeof(new_rx_bp));
++	}
++
++	wil_memcpy_toio_32((void * __force)my_glob_wil->csr + HOSTADDR(PTR_MEM_SENSING_BP), (void *) &new_rx_bp, sizeof(new_rx_bp));
++
++	//struct wil6210_priv *wil = file->private_data;
++	//rc = wmi_echo(my_glob_wil);
++//
++	//if(rc){
++	//	printk(KERN_CRIT "Nay :(\n");
++//
++	//} else {
++	//	printk(KERN_CRIT "Yay! :)\n");
++//
++	//}
++
++	// Manual scan
++	printk(KERN_CRIT "Manual scan\n");
++
++	// Netlink scan
++
++	//struct wiphy *wiphy = wil_to_wiphy(my_glob_wil);
++	//struct wil6210_vif *vif = ndev_to_vif(my_glob_wil->main_ndev);
++	//wil_cfg80211_scan_fast(wiphy);
++	//wmi_abort_scan(vif);
++
++
++
++	// This is probably the worst thing I have done so far
++	//char req[] = {0x00000000, 0x000000cf, 0x000000cb, 0x000000ce, 0x00000000, 0x000000e0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000cf, 0x000000cb, 0x000000ce, 0x00000000, 0x000000e0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000cf, 0x000000cb, 0x000000ce, 0x00000000, 0x000000e0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000cf, 0x000000cb, 0x000000ce, 0x00000000, 0x000000e0, 0x00000000, 0x00000000};
++	//struct cfg80211_scan_request *request;
++	//request = (struct cfg80211_scan_request *) kmalloc(sizeof(struct cfg80211_scan_request), GFP_KERNEL);
++	//memcpy(request, &req, sizeof(struct cfg80211_scan_request));
++//
++	//// Hopefully request is valid now
++	//struct wil6210_vif *vif = ndev_to_vif(my_glob_wil->main_ndev);
++	//vif->scan_request = request;
++
++
++	//struct wil6210_priv *wil = file->private_data;
++	//struct wiphy *wiphy = wil_to_wiphy(wil);
++	//struct wireless_dev *wdev = wil->main_ndev->ieee80211_ptr;
++	//struct wil6210_vif *vif = wdev_to_vif(wil, wdev);
++	//struct wil6210_vif *vif = ndev_to_vif(wil->main_ndev);
++//
++
++	//struct wireless_dev *wdev = my_glob_wil->main_ndev->ieee80211_ptr;
++	//struct wil6210_vif *vif = ndev_to_vif(my_glob_wil->main_ndev);
++
++	// Create the scan request
++	//struct cfg80211_scan_request request;
++	//request->wdev = wdev;
++	//memset(vif->scan_request, 0, sizeof(cfg80211_scan_request));
++
++	//struct cfg80211_scan_request *request;
++//
++	//request = kzalloc(sizeof(*request)
++	//	+ sizeof(*request->ssids) * n_ssids
++	//	+ sizeof(*request->channels) * n_channels
++	//	+ ie_len, GFP_KERNEL);
++
++
++	//[   73.223563] ssid[0]: 0
++	//[   73.226213] n_ssids 1
++	//[   73.228619] channels -822223964
++	//[   73.230898] scan_width 0
++	//[   73.233848] ie_len 0
++	//[   73.236626] duration 0
++	//[   73.238863] duration_mandatory 0
++	//[   73.240970] flags 0
++	//[   73.244353] rate[0]: 0
++	//[   73.246174] rate[1]: 0
++	//[   73.248643] rate[2]: 0
++	//[   73.250952]  MAC addr(00:00:00:00:00:00) 
++	//[   73.250958]  MAC addr mask(00:00:00:00:00:00) 
++	//[   73.253297]  BSSID(ff:ff:ff:ff:ff:ff) 
++
++//	struct cfg80211_ssid ssid;
++//
++//	mutex_lock(&my_glob_wil->mutex);
++////
++	//struct {
++	//	struct wmi_start_scan_cmd cmd;
++	//	u16 chnl[4];
++	//} __packed cmd;
++//
++	////mutex_lock(&my_glob_wil->vif_mutex);
++	////vif->scan_request = *request;
++	////mutex_unlock(&my_glob_wil->vif_mutex);
++//
++	//memset(&cmd, 0, sizeof(cmd));
++	//cmd.cmd.scan_type = WMI_ACTIVE_SCAN;
++	//cmd.cmd.num_channels = 0;
++	//cmd.cmd.channel_list[cmd.cmd.num_channels++].channel = 1; // 60480 MHz
++	//cmd.cmd.discovery_mode = 1;
++////
++	////if (vif->mid == 0)
++	////	my_glob_wil->radio_wdev = wdev;
++////
++	//rc = wmi_send(my_glob_wil, WMI_START_SCAN_CMDID, vif->mid,
++	//	      &cmd, sizeof(cmd.cmd) +
++	//	      cmd.cmd.num_channels * sizeof(cmd.cmd.channel_list[0]));
++////
++	//mutex_unlock(&my_glob_wil->mutex);
++////
++	//printk(KERN_CRIT "Scan done\n");
++
++	//struct ath6kl_cfg80211_match_probe_ssid ssid_list[MAX_PROBED_SSIDS];
++
++	//memset(ssid_list, 0, sizeof(ssid_list));
++
++
++	/*struct wil6210_priv *wil = file->private_data;
++	struct wiphy *wiphy = wil_to_wiphy(wil);
++	struct wireless_dev *wdev = wil->main_ndev->ieee80211_ptr;
++	struct cfg80211_mgmt_tx_params params;
++	int rc;
++	void *frame;
++
++	if (!len)
++		return -EINVAL;
++
++	frame = memdup_user(buf, len);
++	if (IS_ERR(frame))
++		return PTR_ERR(frame);
++
++	params.buf = frame;
++	params.len = len;
++
++	rc = wil_cfg80211_mgmt_tx(wiphy, wdev, &params, NULL);*/
++
++	//struct seq_file *s = file->private_data;
++	//struct wil6210_priv *wil = s->private;
++	//struct wiphy *wiphy = wil_to_wiphy(wil);
++	//struct wireless_dev *wdev = wil->main_ndev->ieee80211_ptr;
++	//struct wil6210_vif *vif = ndev_to_vif(wil->main_ndev);
++
++	//struct cfg80211_scan_request request;
++
++
++	//struct cfg80211_scan_request {
++	//struct cfg80211_ssid *ssids;
++	//	int n_ssids;
++	//	u32 n_channels;
++	//	enum nl80211_bss_scan_width scan_width;
++	//	const u8 *ie;
++	//	size_t ie_len;
++	//	u16 duration;
++	//	bool duration_mandatory;
++	//	u32 flags;
++//
++	//	u32 rates[NUM_NL80211_BANDS];
++//
++	//	struct wireless_dev *wdev;
++//
++	//	u8 mac_addr[ETH_ALEN] __aligned(2);
++	//	u8 mac_addr_mask[ETH_ALEN] __aligned(2);
++	//	u8 bssid[ETH_ALEN] __aligned(2);
++//
++	//	/* internal */
++	//	struct wiphy *wiphy;
++	//	unsigned long scan_start;
++	//	struct cfg80211_scan_info info;
++	//	bool notified;
++	//	bool no_cck;
++//
++	//	/* keep last */
++	//	struct ieee80211_channel *channels[];
++	//};
++
++	//rc = wil_cfg80211_scan_fast(wiphy, vif->scan_request);
++
++	//printk(KERN_CRIT "Scan done\n");
 +
 +	return len;
 +}
@@ -76,12 +586,17 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/debugfs.c b/drivers/net/wireless/a
 +		if(test_bit(WMI_FW_CAPABILITY_MOD_FW, my_glob_wil->fw_capabilities)) {
 +
 +			u32 cur_rx_bp[6];
++
++			int i;
 +		
-+			// Copy the current Rx BP from memory
-+			wil_memcpy_fromio_32((void *) &cur_rx_bp, (void * __force)my_glob_wil->csr + HOSTADDR(PTR_MEM_RX_BP), sizeof(cur_rx_bp));
-+		
-+			seq_printf(s, "This only works if the interface is up!\n");
-+			seq_printf(s, "The cur Rx BP is %08x %08x %08x %08x %08x %08x\n", cur_rx_bp[0], cur_rx_bp[1], cur_rx_bp[2], cur_rx_bp[3], cur_rx_bp[4], cur_rx_bp[5]);
++			for (i=0; i < 64*24; i+=24) {
++				// Copy the current Rx BP from memory
++				wil_memcpy_fromio_32((void *) &cur_rx_bp, (void * __force)my_glob_wil->csr + HOSTADDR(PTR_MEM_RX_BP + i), sizeof(cur_rx_bp));
++			
++				seq_printf(s, "This only works if the interface is up!\n");
++				seq_printf(s, "The cur on index %d Rx BP is %08x %08x %08x %08x %08x %08x\n", i, cur_rx_bp[0], cur_rx_bp[1], cur_rx_bp[2], cur_rx_bp[3], cur_rx_bp[4], cur_rx_bp[5]);
++
++			}
 +
 +		} else {
 +
@@ -108,26 +623,153 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/debugfs.c b/drivers/net/wireless/a
  	.llseek		= seq_lseek,
  };
 +
++// Dump memory
  static int
- sweep_dump_cur_show(struct seq_file *s, void *data) {
-         u32 i, p, j;
-@@ -2691,6 +2781,7 @@ static const struct {
+-sweep_dump_cur_show(struct seq_file *s, void *data) {
+-        u32 i, p, j;
+-        sweep_dump_t sweep_dump;
+-        sector_info_t feedback_info;
+-        int snr_qdb, snr_db;
+-        if(my_glob_wil != NULL) {
+-                if(test_bit(WMI_FW_CAPABILITY_MOD_FW, my_glob_wil->fw_capabilities)) {
+-
+-                        // Copy the Sweep Dump
+-                        wil_memcpy_fromio_32((void *) &sweep_dump, (void * __force)my_glob_wil->csr + HOSTADDR(PTR_MEM_SWEEP_DUMP), sizeof(sweep_dump_t));
+-
+-                        seq_printf(s, "Counter: %d swps, %d pkts\n",
+-                                sweep_dump.ctr_swps,  sweep_dump.ctr_pkts);
+-
+-                        seq_printf(s, "Sector Sweep Dump: {\n");
+-
+-			// Find the most actual sweep packets
+-			/*j = sweep_dump.cur_pos - 1;	
+-			for(i=1; i < SWEEP_DUMP_SIZE; i++) {
+-				p = (sweep_dump.cur_pos - i - 1) % SWEEP_DUMP_SIZE;
+-				if (sweep_dump.dump[p].sector_id > sweep_dump.dump[(p+1) % SWEEP_DUMP_SIZE].sector_id)
+-					break;
++memory_dump_show(struct seq_file *s, void *data) {
++
++	if(my_glob_wil != NULL) {
++
++		if(test_bit(WMI_FW_CAPABILITY_MOD_FW, my_glob_wil->fw_capabilities)) {
++
++
++			printk(KERN_CRIT "MEMORY DUMP: HOSTADDR(0) %08lx, HOSTADDR(8c0000) %08lx\n", HOSTADDR(0x0), HOSTADDR(0x8c0000));
++
++
++			int i;
++
++			// Total memory 0x87FFFF
++
++			for (i = 0; i < 0x80FFFF; i+=4) {
++
++				u32 memory_row[4];
++			
++				// Copy the current Rx BP from memory
++				wil_memcpy_fromio_32((void *) &memory_row, (void * __force)my_glob_wil->csr  + HOSTADDR(i), sizeof(memory_row));
++			
++				seq_printf(s, "[%08lx] %08x %08x %08x %08x\n",  HOSTADDR(i), memory_row[0], memory_row[1], memory_row[2], memory_row[3]);
+ 			}
+-			while (p != (sweep_dump.cur_pos - 1) % SWEEP_DUMP_SIZE) {
+-				p = (p + 1) % SWEEP_DUMP_SIZE;
+-                                snr_qdb = sweep_dump.dump[p].snr;
+-				if (snr_qdb > 0xFF){
+-                                        snr_qdb -= 0x200;
+-                                }
+-                                // Determine the SNR in dB
+-                                snr_db = (snr_qdb + 2) >> 2;
+-
+-				seq_printf(s, "  [sec: %2d rssi: %7d snr: %3d qdB (%2d dB) src: %02x:%02x:%02x:%02x:%02x:%02x]\n",
+-                                        sweep_dump.dump[p].sector_id, sweep_dump.dump[p].rssi, snr_qdb, snr_db,
+-                                        sweep_dump.dump[p].macaddr[0], sweep_dump.dump[p].macaddr[1], sweep_dump.dump[p].macaddr[2],
+-                                        sweep_dump.dump[p].macaddr[3], sweep_dump.dump[p].macaddr[4], sweep_dump.dump[p].macaddr[5] );
+-
+-			} */
+-                        seq_printf(s, "}\n");
+-                } else {
+-                        return -1;
+-                }
+-        } else {
+-                return -1;
+-        }
+-        return 0;
++
++		} else {
++
++			return -1;
++		}
++
++	} else {
++		return -1;
++	}
++
++	return 0;
+ }
++
+ static int
+-sweep_dump_cur_open(struct inode *inode, struct file *file) {
+-    return single_open(file, sweep_dump_cur_show, inode->i_private);
++memory_dump_open(struct inode *inode, struct file *file) {
++    return single_open(file, memory_dump_show, inode->i_private);
+ }
+-static const struct file_operations fops_sweep_dump_cur = {
+-    .open       = sweep_dump_cur_open,
++
++static const struct file_operations fops_memory_dump = {
++	.open      	= memory_dump_open,
+ 	.release	= single_release,
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+@@ -2646,12 +2907,13 @@ static void wil6210_debugfs_init_blobs(s
+ 		struct debugfs_blob_wrapper *blob = &wil_blob->blob;
+ 		const struct fw_map *map = &fw_mapping[i];
+ 
+-		if (!map->name)
++		if (!map->name) 
+ 			continue;
+ 
+ 		wil_blob->wil = wil;
+ 		blob->data = (void * __force)wil->csr + HOSTADDR(map->host);
+ 		blob->size = map->to - map->from;
++
+ 		snprintf(name, sizeof(name), "blob_%s", map->name);
+ 		wil_debugfs_create_ioblob(name, 0444, dbg, wil_blob);
+ 	}
+@@ -2690,7 +2952,8 @@ static const struct {
+ 	{"console_dump_fw", 	0444,	&fops_console_dump_fw},
  	{"console_dump_uc",     0444,   &fops_console_dump_uc},
  	{"sweep_dump", 		0444,   &fops_sweep_dump},
- 	{"sweep_dump_cur", 	0444,   &fops_sweep_dump_cur},
+-	{"sweep_dump_cur", 	0444,   &fops_sweep_dump_cur},
 +	{"set_rx_bp", 	0444,   &fops_set_rx_bp},
++	{"memory_dump", 	0444,   &fops_memory_dump},
  	{"compressed_rx_status", 0644,	&fops_compressed_rx_status},
  	{"srings",	0444,		&fops_srings},
  	{"status_msg",	0444,		&fops_status_msg},
 diff -rupN a/drivers/net/wireless/ath/wil6210/set_rx_bp_info.h b/drivers/net/wireless/ath/wil6210/set_rx_bp_info.h
 --- a/drivers/net/wireless/ath/wil6210/set_rx_bp_info.h	1970-01-01 01:00:00.000000000 +0100
-+++ b/drivers/net/wireless/ath/wil6210/set_rx_bp_info.h	2020-11-25 17:55:22.619861184 +0100
-@@ -0,0 +1,7 @@
++++ b/drivers/net/wireless/ath/wil6210/set_rx_bp_info.h	2020-12-10 08:43:58.763257113 +0100
+@@ -0,0 +1,12 @@
 +#ifndef SET_RX_BP_INFO_H_
 +#define SET_RX_BP_INFO_H_
 +
 +// This is the offset of the Rx BP
-+#define PTR_MEM_RX_BP 0x917F88
++#define PTR_MEM_SENSING_BP 0x917F88 //Offset 7D0 this is the sensing BP
++//#define PTR_MEM_RX_BP 0x9185A0 //Offset DE8 this is the last BP
++
++#define PTR_MEM_RX_BP 0x917FB8 //Offset 800 
++
++//#define PTR_MEM_RX_BP_2 0x84ff88
 +
 +#endif /* SET_RX_BP_INFO_H_ */
 \ No newline at end of file
+diff -rupN a/drivers/net/wireless/ath/wil6210/wil6210.h b/drivers/net/wireless/ath/wil6210/wil6210.h
+--- a/drivers/net/wireless/ath/wil6210/wil6210.h	2020-11-20 16:49:15.078498000 +0100
++++ b/drivers/net/wireless/ath/wil6210/wil6210.h	2020-12-11 10:07:17.799133080 +0100
+@@ -1289,6 +1289,7 @@ int wmi_pcp_stop(struct wil6210_vif *vif
+ int wmi_led_cfg(struct wil6210_priv *wil, bool enable);
+ int wmi_abort_scan(struct wil6210_vif *vif);
+ void wil_abort_scan(struct wil6210_vif *vif, bool sync);
++int wil_cfg80211_scan_fast(struct wiphy *wiphy);
+ void wil_abort_scan_all_vifs(struct wil6210_priv *wil, bool sync);
+ void wil6210_bus_request(struct wil6210_priv *wil, u32 kbps);
+ void wil6210_disconnect(struct wil6210_vif *vif, const u8 *bssid,
