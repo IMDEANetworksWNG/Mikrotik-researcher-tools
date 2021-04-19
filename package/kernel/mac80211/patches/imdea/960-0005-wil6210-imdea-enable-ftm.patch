@@ -1,6 +1,6 @@
 diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/ath/wil6210/cfg80211.c
 --- a/drivers/net/wireless/ath/wil6210/cfg80211.c	2019-02-15 20:40:00.000000000 +0100
-+++ b/drivers/net/wireless/ath/wil6210/cfg80211.c	2021-04-19 16:30:13.218973199 +0200
++++ b/drivers/net/wireless/ath/wil6210/cfg80211.c	2021-04-19 16:42:48.605717242 +0200
 @@ -22,6 +22,7 @@
  #include "wil6210.h"
  #include "wmi.h"
@@ -665,7 +665,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
  	wil->max_vifs = conc->n_mids + 1; /* including main interface */
  	if (wil->max_vifs > WIL_MAX_VIFS) {
  		wil_info(wil, "limited number of VIFs supported(%d, FW %d)\n",
-@@ -2710,3 +2843,1266 @@ static int wil_rf_sector_set_selected(st
+@@ -2710,3 +2843,1265 @@ static int wil_rf_sector_set_selected(st
  
  	return rc;
  }
@@ -1617,7 +1617,6 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +
 +	struct nlattr *manual_tb[1];
 +	struct nlattr *peer_tb[1];
-+
 +
 +	// Create the request manually
 +	struct wil_ftm_session_request *manual_request;
