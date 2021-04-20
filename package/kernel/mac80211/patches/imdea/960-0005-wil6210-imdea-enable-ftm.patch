@@ -1,6 +1,6 @@
 diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/ath/wil6210/cfg80211.c
 --- a/drivers/net/wireless/ath/wil6210/cfg80211.c	2019-02-15 20:40:00.000000000 +0100
-+++ b/drivers/net/wireless/ath/wil6210/cfg80211.c	2021-04-19 16:42:48.605717242 +0200
++++ b/drivers/net/wireless/ath/wil6210/cfg80211.c	2021-04-20 09:05:55.775987969 +0200
 @@ -22,6 +22,7 @@
  #include "wil6210.h"
  #include "wmi.h"
@@ -298,7 +298,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +
 +	rc = wil_ps_update(wil, ps_profile);
 +
-+	printk("WMI_PS_DEV_PROFILE_CFG_CMDID status: %d\n", rc);
++	//printk("WMI_PS_DEV_PROFILE_CFG_CMDID status: %d\n", rc);
 +
 +	// Now we need to do a UNIT test to calibrate Tx and Rx
 +	struct {
@@ -327,7 +327,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +                  &reply_unit, sizeof(reply_unit),
 +                  2000);
 +
-+	printk("WMI_UNIT_TEST_CMDID status: %d\n", reply_unit.res);
++	//printk("WMI_UNIT_TEST_CMDID status: %d\n", reply_unit.res);
 +
 +
 +	wil_info(wil, "connect, mid=%d\n", vif->mid);
@@ -665,7 +665,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
  	wil->max_vifs = conc->n_mids + 1; /* including main interface */
  	if (wil->max_vifs > WIL_MAX_VIFS) {
  		wil_info(wil, "limited number of VIFs supported(%d, FW %d)\n",
-@@ -2710,3 +2843,1265 @@ static int wil_rf_sector_set_selected(st
+@@ -2710,3 +2843,1262 @@ static int wil_rf_sector_set_selected(st
  
  	return rc;
  }
@@ -734,7 +734,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			      const u8 *mac_addr, u32 freq)
 +{
 +
-+	printk("wil_ftm_get_channel\n");
++	//printk("wil_ftm_get_channel\n");
 +
 +	struct wiphy *wiphy = wil_to_wiphy(wil);
 +	struct cfg80211_bss *bss;
@@ -762,7 +762,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +
 +	wil_info(wil, "target %pM at channel %d\n", mac_addr, channel);
 +
-+	printk("Channel: %d\n", channel);
++	//printk("Channel: %d\n", channel);
 +
 +
 +	return channel;
@@ -772,7 +772,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +				     struct nlattr *attr,
 +				     struct wil_ftm_meas_params *params)
 +{
-+	printk("wil_ftm_parse_meas_params\n");
++	//printk("wil_ftm_parse_meas_params\n");
 +
 +	struct nlattr *tb[QCA_WLAN_VENDOR_ATTR_FTM_PARAM_MAX + 1];
 +	int rc;
@@ -807,7 +807,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +static int wil_ftm_validate_meas_params(struct wil6210_priv *wil,
 +					struct wil_ftm_meas_params *params)
 +{
-+	printk("wil_ftm_validate_meas_params\n");
++	//printk("wil_ftm_validate_meas_params\n");
 +
 +	/* temporary allow only single-burst */
 +	if (params->meas_per_burst > WIL_FTM_MAX_MEAS_PER_BURST ||
@@ -823,7 +823,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +				      struct sk_buff *msg,
 +				      struct wil_ftm_meas_params *params)
 +{
-+	printk("wil_ftm_append_meas_params\n");
++	//printk("wil_ftm_append_meas_params\n");
 +
 +	struct nlattr *nl_p;
 +
@@ -850,7 +850,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +					struct sk_buff *msg,
 +					struct wil_ftm_peer_meas_res *res)
 +{
-+	printk("wil_ftm_append_peer_meas_res\n");
++	//printk("wil_ftm_append_peer_meas_res\n");
 +
 +	struct nlattr *nl_mres, *nl_f;
 +	int i;
@@ -903,7 +903,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +				     struct wil_ftm_peer_meas_res *res)
 +{
 +
-+	printk("wil_ftm_send_meas_result\n");
++	//printk("wil_ftm_send_meas_result\n");
 +
 +	struct wil6210_priv *wil = vif_to_wil(vif);
 +	struct sk_buff *vendor_event = NULL;
@@ -956,19 +956,19 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +
 +static void wil_ftm_send_peer_res(struct wil6210_vif *vif)
 +{
-+	printk("wil_ftm_send_peer_res\n");
++	//printk("wil_ftm_send_peer_res\n");
 +
 +	if (!vif->ftm.has_ftm_res || !vif->ftm.ftm_res)
 +		return;
 +
-+	wil_ftm_send_meas_result(vif, vif->ftm.ftm_res);
++	//wil_ftm_send_meas_result(vif, vif->ftm.ftm_res);
 +	vif->ftm.has_ftm_res = 0;
 +	vif->ftm.ftm_res->n_meas = 0;
 +}
 +
 +static void wil_aoa_measurement_timeout(struct work_struct *work)
 +{
-+	printk("wil_aoa_measurement_timeout\n");
++	//printk("wil_aoa_measurement_timeout\n");
 +
 +	struct wil_ftm_priv *ftm = container_of(work, struct wil_ftm_priv,
 +						aoa_timeout_work);
@@ -990,7 +990,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			       struct wil_ftm_session_request *request)
 +{
 +
-+	printk("[IMDEA] wil_ftm_cfg80211_start_session\n");
++	//printk("[IMDEA] wil_ftm_cfg80211_start_session\n");
 +	struct wil6210_priv *wil = vif_to_wil(vif);
 +	int rc = 0;
 +	bool has_lci = false, has_lcr = false;
@@ -1016,7 +1016,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			       request->peers[i].params.meas_per_burst);
 +	}
 +
-+	printk("[IMDEA] 1\n");
++	//printk("[IMDEA] 1\n");
 +
 +
 +	vif->ftm.ftm_res = kzalloc(sizeof(*vif->ftm.ftm_res) +
@@ -1037,7 +1037,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	if (has_lcr)
 +		vif->ftm.ftm_res->lcr = ptr;
 +	vif->ftm.max_ftm_meas = max_meas;
-+	printk("[IMDEA] 2\n");
++	//printk("[IMDEA] 2\n");
 +
 +
 +	cmd_len = sizeof(struct wmi_tof_session_start_cmd) +
@@ -1052,12 +1052,12 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	cmd->aoa_type = request->aoa_type;
 +	cmd->num_of_dest = cpu_to_le16(request->n_peers);
 +
-+	printk("[IMDEA] 3\n");
++	//printk("[IMDEA] 3\n");
 +
 +	for (i = 0; i < request->n_peers; i++) {
 +		ether_addr_copy(cmd->ftm_dest_info[i].dst_mac,
 +				request->peers[i].mac_addr);
-+		printk("[IMDEA] 4 Mac (%pM)\n", request->peers[i].mac_addr);
++		//printk("[IMDEA] 4 Mac (%pM)\n", request->peers[i].mac_addr);
 +
 +
 +		channel = wil_ftm_get_channel(wil, request->peers[i].mac_addr,
@@ -1067,7 +1067,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			rc = -EINVAL;
 +			goto out_cmd;
 +		}
-+		printk("[IMDEA] 5\n");
++		//printk("[IMDEA] 5\n");
 +		cmd->ftm_dest_info[i].channel = channel - 1;
 +
 +		//cmd->ftm_dest_info[i].channel = 2;
@@ -1080,37 +1080,37 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +		} else {
 +			cmd->ftm_dest_info[i].initial_token =
 +				WIL_TOF_FTM_DEFAULT_INITIAL_TOKEN;
-+				printk("[IMDEA] WIL_TOF_FTM_DEFAULT_INITIAL_TOKEN\n");
++				//printk("[IMDEA] WIL_TOF_FTM_DEFAULT_INITIAL_TOKEN\n");
 +		}
 +
-+		printk("[IMDEA] Initial flag = %d\n", cmd->ftm_dest_info[i].flags);
++		//printk("[IMDEA] Initial flag = %d\n", cmd->ftm_dest_info[i].flags);
 +
 +		
-+		printk("[IMDEA] 6\n");
++		//printk("[IMDEA] 6\n");
 +		if (request->peers[i].flags &
 +		    QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_FLAG_ASAP) {
 +				cmd->ftm_dest_info[i].flags |=
 +				WMI_TOF_SESSION_START_FLAG_ASAP;
 +
-+				printk("[IMDEA] WMI_TOF_SESSION_START_FLAG_ASAP set\n");
++				//printk("[IMDEA] WMI_TOF_SESSION_START_FLAG_ASAP set\n");
 +
 +			}
 +		if (request->peers[i].flags &
 +		    QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_FLAG_LCI) {
 +			cmd->ftm_dest_info[i].flags |=
 +				WMI_TOF_SESSION_START_FLAG_LCI_REQ;
-+				printk("[IMDEA] WMI_TOF_SESSION_START_FLAG_LCI_REQ set\n");
++				//printk("[IMDEA] WMI_TOF_SESSION_START_FLAG_LCI_REQ set\n");
 +
 +			}
 +		if (request->peers[i].flags &
 +		    QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_FLAG_LCR) {
 +			cmd->ftm_dest_info[i].flags |=
 +				WMI_TOF_SESSION_START_FLAG_LCR_REQ;
-+				printk("[IMDEA] WMI_TOF_SESSION_START_FLAG_LCR_REQ set\n");
++				//printk("[IMDEA] WMI_TOF_SESSION_START_FLAG_LCR_REQ set\n");
 +
 +			}
 +
-+		printk("[IMDEA] 7\n");
++		//printk("[IMDEA] 7\n");
 +		cmd->ftm_dest_info[i].num_of_ftm_per_burst =
 +			request->peers[i].params.meas_per_burst;
 +		cmd->ftm_dest_info[i].num_of_bursts_exp =
@@ -1123,20 +1123,20 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			request->peers[i].aoa_burst_period;
 +	}
 +
-+    wil_err(wil, "Session ID                        = %d\n",  cmd->session_id);
-+    wil_err(wil, "AoA Type                          = %d\n",  cmd->aoa_type);
-+    wil_err(wil, "Num of destinations               = %d\n",  cmd->num_of_dest);
-+    wil_err(wil, "Dest[0] Channel                   = %d\n",  cmd->ftm_dest_info[0].channel);
-+    wil_err(wil, "Dest[0] Flags                     = %d\n",  cmd->ftm_dest_info[0].flags);
-+    wil_err(wil, "Dest[0] Initial Token             = %d\n",  cmd->ftm_dest_info[0].initial_token);
-+    wil_err(wil, "Dest[0] Num of FTM per burst      = %d\n",  cmd->ftm_dest_info[0].num_of_ftm_per_burst);
-+    wil_err(wil, "Dest[0] Num of bursts exp         = %d\n",  cmd->ftm_dest_info[0].num_of_bursts_exp);
-+    wil_err(wil, "Dest[0] Burst Duration            = %d\n",  cmd->ftm_dest_info[0].burst_duration);
-+    wil_err(wil, "Dest[0] Burst Period              = %d\n",  cmd->ftm_dest_info[0].burst_period);
-+    wil_err(wil, "Dest[0] Num Burst per AoA Measure = %d\n",  cmd->ftm_dest_info[0].num_burst_per_aoa_meas);
-+    wil_err(wil, "Dest[0] Destination MAC Address   = %pM\n", cmd->ftm_dest_info[0].dst_mac);
-+
-+	printk("wil_ftm_cfg80211_start_session WMI_TOF_SESSION_START_CMDID\n");
++    //wil_err(wil, "Session ID                        = %d\n",  cmd->session_id);
++    //wil_err(wil, "AoA Type                          = %d\n",  cmd->aoa_type);
++    //wil_err(wil, "Num of destinations               = %d\n",  cmd->num_of_dest);
++    //wil_err(wil, "Dest[0] Channel                   = %d\n",  cmd->ftm_dest_info[0].channel);
++    //wil_err(wil, "Dest[0] Flags                     = %d\n",  cmd->ftm_dest_info[0].flags);
++    //wil_err(wil, "Dest[0] Initial Token             = %d\n",  cmd->ftm_dest_info[0].initial_token);
++    //wil_err(wil, "Dest[0] Num of FTM per burst      = %d\n",  cmd->ftm_dest_info[0].num_of_ftm_per_burst);
++    //wil_err(wil, "Dest[0] Num of bursts exp         = %d\n",  cmd->ftm_dest_info[0].num_of_bursts_exp);
++    //wil_err(wil, "Dest[0] Burst Duration            = %d\n",  cmd->ftm_dest_info[0].burst_duration);
++    //wil_err(wil, "Dest[0] Burst Period              = %d\n",  cmd->ftm_dest_info[0].burst_period);
++    //wil_err(wil, "Dest[0] Num Burst per AoA Measure = %d\n",  cmd->ftm_dest_info[0].num_burst_per_aoa_meas);
++    //wil_err(wil, "Dest[0] Destination MAC Address   = %pM\n", cmd->ftm_dest_info[0].dst_mac);
++//
++	//printk("wil_ftm_cfg80211_start_session WMI_TOF_SESSION_START_CMDID\n");
 +
 +    //struct wmi_tof_ftm_per_dest_res_event reply;
 +    //memset(&reply, 0, sizeof(reply));
@@ -1197,7 +1197,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +static void
 +wil_ftm_cfg80211_session_ended(struct wil6210_vif *vif, u32 status)
 +{
-+	printk("wil_ftm_cfg80211_session_ended\n");
++	//printk("wil_ftm_cfg80211_session_ended\n");
 +
 +	struct wil6210_priv *wil = vif_to_wil(vif);
 +	struct sk_buff *vendor_event = NULL;
@@ -1215,12 +1215,11 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	/* send left-over results if any */
 +	wil_ftm_send_peer_res(vif);
 +
-+	// Get the results
-+	printk("[RESULT!!!] t1: %d, t2: %d, t3: %d, t4: %d\n", vif->ftm.ftm_res->meas[0].t1, vif->ftm.ftm_res->meas[0].t2, vif->ftm.ftm_res->meas[0].t3, vif->ftm.ftm_res->meas[0].t4);
-+
 +	vif->ftm.session_started = 0;
 +	kfree(vif->ftm.ftm_res);
 +	vif->ftm.ftm_res = NULL;
++
++	goto out;
 +
 +	vendor_event = cfg80211_vendor_event_alloc(
 +		wil_to_wiphy(wil),
@@ -1305,7 +1304,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +void wil_aoa_cfg80211_meas_result(struct wil6210_vif *vif,
 +				  struct wil_aoa_meas_result *result)
 +{
-+	printk("wil_aoa_cfg80211_meas_result\n");
++	//printk("wil_aoa_cfg80211_meas_result\n");
 +
 +	struct wil6210_priv *wil = vif_to_wil(vif);
 +	struct sk_buff *vendor_event = NULL;
@@ -1361,7 +1360,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +void wil_ftm_evt_session_ended(struct wil6210_vif *vif,
 +			       struct wmi_tof_session_end_event *evt)
 +{
-+	printk("wil_ftm_evt_session_ended\n");
++	//printk("wil_ftm_evt_session_ended\n");
 +
 +	u32 status;
 +
@@ -1390,7 +1389,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			      struct wmi_tof_ftm_per_dest_res_event *evt)
 +{
 +
-+	printk("wil_ftm_evt_per_dest_res\n");
++	//printk("wil_ftm_evt_per_dest_res\n");
 +	struct wil6210_priv *wil = vif_to_wil(vif);
 +	u32 i, index;
 +	__le64 tmp = 0;
@@ -1447,9 +1446,6 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			break;
 +		}
 +
-+		printk("Yeah! Measurements!\n");
-+
-+
 +		memcpy(&tmp, evt->responder_ftm_res[i].t1,
 +		       sizeof(evt->responder_ftm_res[i].t1));
 +		vif->ftm.ftm_res->meas[index].t1 = le64_to_cpu(tmp);
@@ -1473,10 +1469,12 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +		vif->ftm.ftm_res->meas[index].t4 = le64_to_cpu(tmp);
 +		t4 = le64_to_cpu(tmp);
 +
-+		printk("T1 = %llu\n", t1);
-+		printk("T2 = %llu\n", t2);
-+		printk("T3 = %llu\n", t3);
-+		printk("T4 = %llu\n", t4);
++		printk("[FTM] Measurement: %llu, %llu, %llu, %llu\n", t1, t2, t3, t4);
++
++		//printk("T1 = %llu\n", t1);
++		//printk("T2 = %llu\n", t2);
++		//printk("T3 = %llu\n", t3);
++		//printk("T4 = %llu\n", t4);
 +
 +		//prink("RTT: %llu\n", ((t4-t1) - (t3-t2)));
 +
@@ -1493,7 +1491,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +		      struct wmi_aoa_meas_event *evt,
 +		      int len)
 +{
-+	printk("wil_aoa_evt_meas\n");
++	//printk("wil_aoa_evt_meas\n");
 +
 +	struct wil6210_priv *wil = vif_to_wil(vif);
 +	int data_len = len - offsetof(struct wmi_aoa_meas_event, meas_data);
@@ -1527,7 +1525,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +int wil_ftm_get_capabilities(struct wiphy *wiphy, struct wireless_dev *wdev,
 +			     const void *data, int data_len)
 +{
-+	printk("wil_ftm_get_capabilities\n");
++	//printk("wil_ftm_get_capabilities\n");
 +
 +	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
 +	struct sk_buff *skb;
@@ -1592,7 +1590,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +int wil_ftm_start_session(struct wiphy *wiphy, struct wireless_dev *wdev,
 +			  const void *data, int data_len)
 +{
-+	printk("wil_ftm_start_session\n");
++	//printk("wil_ftm_start_session\n");
 +
 +	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
 +	struct wil6210_vif *vif = wdev_to_vif(wil, wdev);
@@ -1605,14 +1603,14 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +
 +
 +	// Debug
-+	printk(KERN_CONT "[DEBUG2] ");
++	//printk(KERN_CONT "[DEBUG2] ");
 +    u8 *new_data = (u8 *) data;
 +	u64 auxiliar;
 +
 +
 +	memcpy(&auxiliar, new_data, sizeof(u64));
 +
-+	printk("%d", auxiliar);
++	//printk("%d", auxiliar);
 +
 +
 +	struct nlattr *manual_tb[1];
@@ -1635,12 +1633,11 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	//memcpy(&manual_request.n_peers, new_data, sizeof(u32));
 +    //new_data += sizeof(u32);
 +
-+
 +	manual_request->session_cookie = 0;
 +	manual_request->aoa_type       = 0;
 +	manual_request->n_peers        = 1;
 +
-+	printk("Basic done\n");
++	//printk("Basic done\n");
 +
 +	// Copy the MAC
 +	u8 mac_addr[ETH_ALEN];
@@ -1664,12 +1661,12 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	manual_request->peers[0].params.num_of_bursts_exp = 0; 
 +	manual_request->peers[0].params.burst_duration = 2;
 +
-+	printk("Mac (%pM) \n", mac_addr);
++	//printk("Mac (%pM) \n", mac_addr);
 +
 +	rc = wil_ftm_validate_meas_params(
 +		wil, &manual_request->peers[0].params);
 +
-+	printk("wil_ftm_validate_meas_params rc: %d\n", rc);
++	//printk("wil_ftm_validate_meas_params rc: %d\n", rc);
 +
 +
 +	rc = wil_ftm_cfg80211_start_session(vif, manual_request);
@@ -1796,7 +1793,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +int wil_ftm_abort_session(struct wiphy *wiphy, struct wireless_dev *wdev,
 +			  const void *data, int data_len)
 +{
-+	printk("wil_ftm_abort_session\n");
++	//printk("wil_ftm_abort_session\n");
 +
 +
 +	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
@@ -1808,7 +1805,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +int wil_ftm_configure_responder(struct wiphy *wiphy, struct wireless_dev *wdev,
 +				const void *data, int data_len)
 +{
-+	printk("wil_ftm_configure_responder\n");
++	//printk("wil_ftm_configure_responder\n");
 +
 +	//struct wil6210_priv *wil = wiphy_to_wil(wiphy);
 +
@@ -1851,7 +1848,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			      const void *data, int data_len)
 +{
 +
-+	printk("wil_aoa_start_measurement\n");
++	//printk("wil_aoa_start_measurement\n");
 +
 +	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
 +	struct wil6210_vif *vif = wdev_to_vif(wil, wdev);
@@ -1899,7 +1896,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +
 +void wil_ftm_init(struct wil6210_vif *vif)
 +{
-+	printk("wil_ftm_init\n");
++	//printk("wil_ftm_init\n");
 +
 +	mutex_init(&vif->ftm.lock);
 +	timer_setup(&vif->ftm.aoa_timer, wil_aoa_timer_fn, 0);
@@ -1909,7 +1906,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +void wil_ftm_deinit(struct wil6210_vif *vif)
 +{
 +
-+	printk("wil_ftm_deinit\n");
++	//printk("wil_ftm_deinit\n");
 +
 +	del_timer_sync(&vif->ftm.aoa_timer);
 +	cancel_work_sync(&vif->ftm.aoa_timeout_work);
@@ -1919,7 +1916,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +void wil_ftm_stop_operations(struct wil6210_priv *wil)
 +{
 +
-+	printk("wil_ftm_stop_operations\n");
++	//printk("wil_ftm_stop_operations\n");
 +	int i;
 +
 +	for (i = 0; i < wil->max_vifs; i++) {
