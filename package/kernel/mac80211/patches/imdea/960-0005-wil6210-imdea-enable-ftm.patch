@@ -1,15 +1,7 @@
 diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/ath/wil6210/cfg80211.c
 --- a/drivers/net/wireless/ath/wil6210/cfg80211.c	2019-02-15 20:40:00.000000000 +0100
-+++ b/drivers/net/wireless/ath/wil6210/cfg80211.c	2021-04-21 12:22:25.290603689 +0200
-@@ -22,6 +22,7 @@
- #include "wil6210.h"
- #include "wmi.h"
- #include "fw.h"
-+//#include "ftm.h"
- 
- #define WIL_MAX_ROC_DURATION_MS 5000
- 
-@@ -122,6 +123,19 @@ enum qca_nl80211_vendor_subcmds {
++++ b/drivers/net/wireless/ath/wil6210/cfg80211.c	2021-04-21 12:34:46.704803496 +0200
+@@ -122,6 +122,19 @@ enum qca_nl80211_vendor_subcmds {
  	QCA_NL80211_VENDOR_SUBCMD_DMG_RF_SET_SECTOR_CFG = 140,
  	QCA_NL80211_VENDOR_SUBCMD_DMG_RF_GET_SELECTED_SECTOR = 141,
  	QCA_NL80211_VENDOR_SUBCMD_DMG_RF_SET_SELECTED_SECTOR = 142,
@@ -29,7 +21,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
  };
  
  static int wil_rf_sector_get_cfg(struct wiphy *wiphy,
-@@ -137,6 +151,21 @@ static int wil_rf_sector_set_selected(st
+@@ -137,6 +150,21 @@ static int wil_rf_sector_set_selected(st
  				      struct wireless_dev *wdev,
  				      const void *data, int data_len);
  
@@ -51,7 +43,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
  /* vendor specific commands */
  static const struct wiphy_vendor_command wil_nl80211_vendor_commands[] = {
  	{
-@@ -169,8 +198,73 @@ static const struct wiphy_vendor_command
+@@ -169,8 +197,73 @@ static const struct wiphy_vendor_command
  			 WIPHY_VENDOR_CMD_NEED_RUNNING,
  		.doit = wil_rf_sector_set_selected
  	},
@@ -99,8 +91,8 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	//		 WIPHY_VENDOR_CMD_NEED_RUNNING,
 +	//	.doit = wil_aoa_abort_measurement
 +	//},
- };
- 
++};
++
 +/* vendor specific events */
 +static const struct nl80211_vendor_cmd_info wil_nl80211_vendor_events[] = {
 +	[QCA_NL80211_VENDOR_EVENT_FTM_MEAS_RESULT_INDEX] = {
@@ -119,13 +111,13 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			.vendor_id = QCA_NL80211_VENDOR_ID,
 +			.subcmd = QCA_NL80211_VENDOR_SUBCMD_UNSPEC
 +	},
-+};
-+
+ };
+ 
 +
  static struct ieee80211_supported_band wil_band_60ghz = {
  	.channels = wil_60ghz_channels,
  	.n_channels = ARRAY_SIZE(wil_60ghz_channels),
-@@ -903,6 +997,44 @@ static int wil_cfg80211_connect(struct w
+@@ -903,6 +996,44 @@ static int wil_cfg80211_connect(struct w
  	int rc = 0;
  	enum ieee80211_bss_type bss_type = IEEE80211_BSS_TYPE_ESS;
  
@@ -170,7 +162,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
  	wil_dbg_misc(wil, "connect, mid=%d\n", vif->mid);
  	wil_print_connect_params(wil, sme);
  
-@@ -1950,6 +2082,7 @@ static int wil_cfg80211_suspend(struct w
+@@ -1950,6 +2081,7 @@ static int wil_cfg80211_suspend(struct w
  
  	mutex_lock(&wil->mutex);
  	mutex_lock(&wil->vif_mutex);
@@ -178,7 +170,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
  	wil_p2p_stop_radio_operations(wil);
  	wil_abort_scan_all_vifs(wil, true);
  	mutex_unlock(&wil->vif_mutex);
-@@ -2710,3 +2843,1172 @@ static int wil_rf_sector_set_selected(st
+@@ -2710,3 +2842,1167 @@ static int wil_rf_sector_set_selected(st
  
  	return rc;
  }
@@ -1023,14 +1015,14 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +
 +	struct wil6210_priv *wil = wiphy_to_wil(wiphy);
 +	struct wil6210_vif *vif = wdev_to_vif(wil, wdev);
-+	struct wil_ftm_session_request *request;
-+	struct nlattr *tb[QCA_WLAN_VENDOR_ATTR_LOC_MAX + 1];
-+	struct nlattr *tb2[QCA_WLAN_VENDOR_ATTR_FTM_PEER_MAX + 1];
-+	struct nlattr *peer;
-+	int rc, n_peers = 0, index = 0, tmp;
-+	u32 aoa_type = 0;
++	//struct wil_ftm_session_request *request;
++	//struct nlattr *tb[QCA_WLAN_VENDOR_ATTR_LOC_MAX + 1];
++	//struct nlattr *tb2[QCA_WLAN_VENDOR_ATTR_FTM_PEER_MAX + 1];
++	//struct nlattr *peer;
++	int rc;//, n_peers = 0, index = 0, tmp;
++	//u32 aoa_type = 0;
 +
-+
++	// Custom code
 +	/*
 +		Here we will do a manual request, normally this would be done via netlink.
 +		All the parameters are set since FTM ONLY allows those parameters, anything
@@ -1038,18 +1030,18 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	*/
 +
 +	// Debug
-+	//printk(KERN_CONT "[DEBUG2] ");
++	// A pointer to the data
 +    u8 *new_data = (u8 *) data;
-+	u64 auxiliar;
++	//u64 auxiliar;
 +
 +
-+	memcpy(&auxiliar, new_data, sizeof(u64));
++	//memcpy(&auxiliar, new_data, sizeof(u64));
 +
 +	//printk("%d", auxiliar);
 +
 +
-+	struct nlattr *manual_tb[1];
-+	struct nlattr *peer_tb[1];
++	//struct nlattr *manual_tb[1];
++	//struct nlattr *peer_tb[1];
 +
 +	// Create the request manually
 +	struct wil_ftm_session_request *manual_request;
@@ -1057,16 +1049,10 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	// Allocate memory
 +	manual_request = kzalloc(sizeof(*manual_request) + sizeof(struct wil_ftm_meas_peer_info), GFP_KERNEL);
 +
-+    //memset(manual_request, 0, sizeof(*manual_request) + sizeof(struct wil_ftm_meas_peer_info));
++	// Copy the MAC address drom the WMI call
++	ether_addr_copy(manual_request->peers[0].mac_addr, new_data);
 +
-+	//memcpy(manual_request->session_cookie, new_data, sizeof(u64));
-+    //new_data += sizeof(u64);
-+
-+	//memcpy(&manual_request.aoa_type, new_data, sizeof(u32));
-+    //new_data += sizeof(u32);
-+
-+	//memcpy(&manual_request.n_peers, new_data, sizeof(u32));
-+    //new_data += sizeof(u32);
++	wil_info(wil, "[FTM] Peer MAC address %pM \n", manual_request->peers[0].mac_addr);
 +
 +	manual_request->session_cookie = 0;
 +	manual_request->aoa_type       = 0;
@@ -1075,15 +1061,16 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	//printk("Basic done\n");
 +
 +	// Copy the MAC
-+	u8 mac_addr[ETH_ALEN];
-+	mac_addr[0] = 0x08;
-+	mac_addr[1] = 0x55;
-+	mac_addr[2] = 0x31;
-+	mac_addr[3] = 0x0a;
-+	mac_addr[4] = 0xd6;
-+	mac_addr[5] = 0xe0;
++	//u8 mac_addr[ETH_ALEN];
++	//mac_addr[0] = 0x08;
++	//mac_addr[1] = 0x55;
++	//mac_addr[2] = 0x31;
++	//mac_addr[3] = 0x0a;
++	//mac_addr[4] = 0xd6;
++	//mac_addr[5] = 0xe0;
++	//
++    //ether_addr_copy(manual_request->peers[0].mac_addr, mac_addr);
 +
-+    ether_addr_copy(manual_request->peers[0].mac_addr, mac_addr);
 +	manual_request->peers[0].freq = 60480;
 +	manual_request->peers[0].flags = QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_FLAG_ASAP;
 +	manual_request->peers[0].secure_token_id = 0;
@@ -1214,7 +1201,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +//
 +	//rc = wil_ftm_cfg80211_start_session(vif, request);
 +out:
-+	kfree(request);
++	//kfree(request);
 +	kfree(manual_request);
 +	return rc;
 +}
@@ -2355,7 +2342,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/sysfs.c b/drivers/net/wireless/ath
 +}
 diff -rupN a/drivers/net/wireless/ath/wil6210/wil6210.h b/drivers/net/wireless/ath/wil6210/wil6210.h
 --- a/drivers/net/wireless/ath/wil6210/wil6210.h	2020-11-20 16:49:15.078498000 +0100
-+++ b/drivers/net/wireless/ath/wil6210/wil6210.h	2021-04-14 10:18:13.813234892 +0200
++++ b/drivers/net/wireless/ath/wil6210/wil6210.h	2021-04-21 12:28:32.907813330 +0200
 @@ -28,6 +28,7 @@
  #include "wmi.h"
  #include "wil_platform.h"
@@ -2449,7 +2436,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/wil6210.h b/drivers/net/wireless/a
  int wmi_stop_sched_scan(struct wil6210_priv *wil);
 diff -rupN a/drivers/net/wireless/ath/wil6210/wmi.c b/drivers/net/wireless/ath/wil6210/wmi.c
 --- a/drivers/net/wireless/ath/wil6210/wmi.c	2019-02-15 20:40:00.000000000 +0100
-+++ b/drivers/net/wireless/ath/wil6210/wmi.c	2021-04-21 12:04:38.744419775 +0200
++++ b/drivers/net/wireless/ath/wil6210/wmi.c	2021-04-21 12:28:32.283811733 +0200
 @@ -2540,6 +2540,71 @@ int wmi_new_sta(struct wil6210_vif *vif,
  	return rc;
  }
