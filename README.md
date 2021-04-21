@@ -1,5 +1,7 @@
 # Researcher version of Openwrt for wAP 60G/LHGG-60ad/wAP 60Gx3 AP
 
+**This is not a oficially supported openwrt fork, do not contact the openwrt maintainers for help. If you have any questions email me at: pablo.jimenezmateo@imdea.org**
+
 Features:
 
 * Comes patched with all the features from [LEDE-ad7200](https://github.com/seemoo-lab/lede-ad7200)
@@ -24,13 +26,18 @@ Features:
     ./scripts/feeds install -a
     ```
 
+3. Copy the config file
+    ```
+    cp mikrotik.config .config
+    ```
+
 3. Build the system
     ```bash
     # Single core
-    make
+    make defconfig
     
     #Or for multicore
-    make -j 8
+    make -j 8 defconfig
     ```
 4. When the configuration asks:
     * In Target system, select Qualcomm Atheros IPQ40XX
@@ -140,3 +147,46 @@ Features:
     ```
 To modify the SSID or password, modify both conf files.
 
+### How to get AoA and ToF masurements
+
+**Note:** For this example I am using the MAC 08:55:31:0a:d6:e0, please change the peer address accordingly.
+
+1. Start a normal connection from STA to AP
+
+2. From the STA issue any of the following commands:
+
+    **ToF**
+        ```bash
+        echo -n -e '\x08\x55\x31\x0a\xd6\xe0' | iw dev wlan0 vendor recv 0x001374 0x81 -
+        ```
+
+    **AoA**
+        ```bash
+        echo -n -e '\x08\x55\x31\x0a\xd6\xe0' | iw dev wlan0 vendor recv 0x001374 0x93 -
+        ```
+3. You should be able to get the output from dmesg:
+
+    **AoA**
+    ```
+    # Example of AoA result
+    [   60.374532] [AOA] Measurement: 0,1579846557.489942,08:55:31:0a:d6:e0,2,1,2,0,128,620,260,41,402,638,785,509,45,470,52,38,204,999,205,371,337,590,793,256,298,925,562,524,482,606,717,59,137,580,627,912,383,29,41,38,36,29,68,27,17,40,33,58,99,33,41,22,18,27,44,47,30,44,18,46,53,45,23,38,49,27,30,38,12
+    ```
+    The values are:
+        * Return code, should always be 0
+        * Time of the measurement as measured by the driver
+        * Peer MAC
+        * Channel, should be 2
+        * Measurement type, should be 1
+        * Rf mask, should be 2
+        * Measurement status, should be 0
+        * Length
+        * The 32 next values are the phase (value between 0 and 1024)
+        * The 32 next values are the magnitude
+
+    **ToF**
+    ```
+    # Example of ToF measurement
+    [ 1281.744417] wil6210 0000:01:00.0 wlan0: wil_ftm_evt_per_dest_res: [FTM] Measurement: 1663086492, 257349564, 266483712, 1674073524
+    ```
+
+    The values are the 4 timestamps (t1, t2, t3, t4) in picoseconds.
