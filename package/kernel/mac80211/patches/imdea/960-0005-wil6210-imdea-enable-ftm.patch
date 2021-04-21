@@ -1,6 +1,6 @@
 diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/ath/wil6210/cfg80211.c
 --- a/drivers/net/wireless/ath/wil6210/cfg80211.c	2019-02-15 20:40:00.000000000 +0100
-+++ b/drivers/net/wireless/ath/wil6210/cfg80211.c	2021-04-21 12:34:46.704803496 +0200
++++ b/drivers/net/wireless/ath/wil6210/cfg80211.c	2021-04-21 13:32:25.025181870 +0200
 @@ -122,6 +122,19 @@ enum qca_nl80211_vendor_subcmds {
  	QCA_NL80211_VENDOR_SUBCMD_DMG_RF_SET_SECTOR_CFG = 140,
  	QCA_NL80211_VENDOR_SUBCMD_DMG_RF_GET_SELECTED_SECTOR = 141,
@@ -17,11 +17,11 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	//QCA_NL80211_VENDOR_SUBCMD_AOA_MEAS = 134,
 +	//QCA_NL80211_VENDOR_SUBCMD_AOA_ABORT_MEAS = 135,
 +	//QCA_NL80211_VENDOR_SUBCMD_AOA_MEAS_RESULT = 136,
-+
++	QCA_NL80211_VENDOR_SUBCMD_GET_AOA_MEASUREMENTS = 147,
  };
  
  static int wil_rf_sector_get_cfg(struct wiphy *wiphy,
-@@ -137,6 +150,21 @@ static int wil_rf_sector_set_selected(st
+@@ -137,6 +150,24 @@ static int wil_rf_sector_set_selected(st
  				      struct wireless_dev *wdev,
  				      const void *data, int data_len);
  
@@ -32,6 +32,9 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			  const void *data, int data_len);
 +int wil_ftm_abort_session(struct wiphy *wiphy, struct wireless_dev *wdev,
 +			  const void *data, int data_len);
++int wil_get_aoa_measurements(struct wiphy *wiphy,
++                                struct wireless_dev *wdev,
++                                const void *data, int data_len);
 +//int wil_ftm_configure_responder(struct wiphy *wiphy, struct wireless_dev *wdev,
 +//				const void *data, int data_len);
 +//int wil_aoa_start_measurement(struct wiphy *wiphy, struct wireless_dev *wdev,
@@ -43,10 +46,18 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
  /* vendor specific commands */
  static const struct wiphy_vendor_command wil_nl80211_vendor_commands[] = {
  	{
-@@ -169,8 +197,73 @@ static const struct wiphy_vendor_command
+@@ -169,8 +200,81 @@ static const struct wiphy_vendor_command
  			 WIPHY_VENDOR_CMD_NEED_RUNNING,
  		.doit = wil_rf_sector_set_selected
  	},
++    {
++        .info.vendor_id = QCA_NL80211_VENDOR_ID,
++        .info.subcmd =
++            QCA_NL80211_VENDOR_SUBCMD_GET_AOA_MEASUREMENTS,
++        .flags = WIPHY_VENDOR_CMD_NEED_WDEV |
++             WIPHY_VENDOR_CMD_NEED_RUNNING,
++        .doit = wil_get_aoa_measurements
++    },
 +
 +	// Gef's additions
 +	//{
@@ -91,8 +102,8 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	//		 WIPHY_VENDOR_CMD_NEED_RUNNING,
 +	//	.doit = wil_aoa_abort_measurement
 +	//},
-+};
-+
+ };
+ 
 +/* vendor specific events */
 +static const struct nl80211_vendor_cmd_info wil_nl80211_vendor_events[] = {
 +	[QCA_NL80211_VENDOR_EVENT_FTM_MEAS_RESULT_INDEX] = {
@@ -111,13 +122,13 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +			.vendor_id = QCA_NL80211_VENDOR_ID,
 +			.subcmd = QCA_NL80211_VENDOR_SUBCMD_UNSPEC
 +	},
- };
- 
++};
++
 +
  static struct ieee80211_supported_band wil_band_60ghz = {
  	.channels = wil_60ghz_channels,
  	.n_channels = ARRAY_SIZE(wil_60ghz_channels),
-@@ -903,6 +996,44 @@ static int wil_cfg80211_connect(struct w
+@@ -903,6 +1007,44 @@ static int wil_cfg80211_connect(struct w
  	int rc = 0;
  	enum ieee80211_bss_type bss_type = IEEE80211_BSS_TYPE_ESS;
  
@@ -162,7 +173,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
  	wil_dbg_misc(wil, "connect, mid=%d\n", vif->mid);
  	wil_print_connect_params(wil, sme);
  
-@@ -1950,6 +2081,7 @@ static int wil_cfg80211_suspend(struct w
+@@ -1950,6 +2092,7 @@ static int wil_cfg80211_suspend(struct w
  
  	mutex_lock(&wil->mutex);
  	mutex_lock(&wil->vif_mutex);
@@ -170,7 +181,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
  	wil_p2p_stop_radio_operations(wil);
  	wil_abort_scan_all_vifs(wil, true);
  	mutex_unlock(&wil->vif_mutex);
-@@ -2710,3 +2842,1167 @@ static int wil_rf_sector_set_selected(st
+@@ -2710,3 +2853,1262 @@ static int wil_rf_sector_set_selected(st
  
  	return rc;
  }
@@ -630,7 +641,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	mutex_lock(&vif->ftm.lock);
 +
 +	if (!vif->ftm.session_started) {
-+		wil_info(wil, "FTM session not started, ignoring event\n");
++		wil_dbg_misc(wil, "FTM session not started, ignoring event\n");
 +		goto out;
 +	}
 +
@@ -1204,6 +1215,101 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/cfg80211.c b/drivers/net/wireless/
 +	//kfree(request);
 +	kfree(manual_request);
 +	return rc;
++}
++
++// AoA measurements
++int wil_get_aoa_measurements(struct wiphy *wiphy,
++                                    struct wireless_dev *wdev,
++                                    const void *data, int data_len)
++{
++    struct wil6210_priv *wil = wdev_to_wil(wdev);
++	struct wil6210_vif *vif = wdev_to_vif(wil, wdev);
++    int rc;
++    u8 i;
++    u16 value;
++    u8 *new_data = (u8 *) data;
++    //u8 channel, aoa_meas_type;
++    //u32 meas_rf_mask;
++
++    struct wmi_aoa_meas_cmd cmd;
++
++    struct {
++        struct wmi_cmd_hdr wmi;
++        struct wmi_aoa_meas_event evt;
++    } __packed reply;
++
++    struct timeval tv;
++
++    u8 *meas_data;
++
++    // Initialize the struct
++    memset(&cmd, 0, sizeof(cmd));
++
++    //memcpy(&channel, new_data, sizeof(u8));
++    //new_data += sizeof(u8);
++	//
++    //memcpy(&aoa_meas_type, new_data, sizeof(u8));
++    //new_data += sizeof(u8);
++	//
++    //memcpy(&meas_rf_mask, new_data, sizeof(u32));
++    //new_data += sizeof(u32);
++
++    ether_addr_copy(cmd.mac_addr, new_data);
++
++    // Default channel
++    cmd.channel = 2;
++
++    // Phase and amplitude
++    cmd.aoa_meas_type = 1;
++
++    // Does not seem to have effect
++    cmd.meas_rf_mask = cpu_to_le32(0);
++
++    memset(&reply, 0, sizeof(reply));
++
++    rc = wmi_call(wil, WMI_AOA_MEAS_CMDID, vif->mid,
++                  &cmd, sizeof(cmd),
++                  WMI_AOA_MEAS_EVENTID,
++                  &reply, sizeof(reply),
++                  500);
++
++    do_gettimeofday(&tv);
++
++    printk(KERN_CONT "[AOA] Measurement: %d,%ld.%06ld,%pM,%u,%u,%d,%u,%u",
++            rc,
++            tv.tv_sec, tv.tv_usec,
++            reply.evt.mac_addr,
++            reply.evt.channel,
++            reply.evt.aoa_meas_type,
++            reply.evt.meas_rf_mask,
++            reply.evt.meas_status,
++            reply.evt.length);
++
++    meas_data = reply.evt.meas_data;
++
++    if (reply.evt.length > 0)
++    {
++        // Print phase information
++        for (i = 0 ; i < 32; i++)
++        {
++            memcpy(&value, meas_data, sizeof(u16));
++            meas_data = meas_data + 2;
++            printk(KERN_CONT ",%d", value);
++        }
++        // Print amplitude information
++        if (reply.evt.aoa_meas_type == WMI_AOA_PHASE_AMP_MEAS)
++        {
++            for (i = 0 ; i < 32; i++)
++            {
++                memcpy(&value, meas_data, sizeof(u16));
++                meas_data = meas_data + 2;
++                printk(KERN_CONT ",%d", value);
++            }
++        }
++    }
++    printk(KERN_CONT "\n");
++
++    return rc;
 +}
 +
 +int wil_ftm_abort_session(struct wiphy *wiphy, struct wireless_dev *wdev,
@@ -2436,7 +2542,7 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/wil6210.h b/drivers/net/wireless/a
  int wmi_stop_sched_scan(struct wil6210_priv *wil);
 diff -rupN a/drivers/net/wireless/ath/wil6210/wmi.c b/drivers/net/wireless/ath/wil6210/wmi.c
 --- a/drivers/net/wireless/ath/wil6210/wmi.c	2019-02-15 20:40:00.000000000 +0100
-+++ b/drivers/net/wireless/ath/wil6210/wmi.c	2021-04-21 12:28:32.283811733 +0200
++++ b/drivers/net/wireless/ath/wil6210/wmi.c	2021-04-21 12:56:10.620632024 +0200
 @@ -2540,6 +2540,71 @@ int wmi_new_sta(struct wil6210_vif *vif,
  	return rc;
  }
@@ -2584,12 +2690,12 @@ diff -rupN a/drivers/net/wireless/ath/wil6210/wmi.c b/drivers/net/wireless/ath/w
 +			// We need to manually do a switch case for ToF
 +			if (id == WMI_TOF_FTM_PER_DEST_RES_EVENTID) {
 +
-+				wil_info(wil, "WMI_TOF_FTM_PER_DEST_RES_EVENTID received!\n");
++				wil_dbg_misc(wil, "WMI_TOF_FTM_PER_DEST_RES_EVENTID received!\n");
 +				wil_ftm_evt_per_dest_res(vif, evt_data);
 +
 +			} else if (id == WMI_TOF_SESSION_END_EVENTID) {
 +
-+				wil_info(wil, "WMI_TOF_SESSION_END_EVENTID received!\n");
++				wil_dbg_misc(wil, "WMI_TOF_SESSION_END_EVENTID received!\n");
 +
 +				wil_ftm_evt_session_ended(vif, evt_data);
 +			} else {
