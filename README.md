@@ -159,15 +159,15 @@ To modify the SSID or password, modify both conf files.
 
     **ToF**
     
-        ```bash
-        echo -n -e '\x08\x55\x31\x0a\xd6\xe0' | iw dev wlan0 vendor recv 0x001374 0x81 -
-        ```
+    ```bash
+    echo -n -e '\x08\x55\x31\x0a\xd6\xe0' | iw dev wlan0 vendor recv 0x001374 0x81 -
+    ```
 
     **AoA**
     
-        ```bash
-        echo -n -e '\x08\x55\x31\x0a\xd6\xe0' | iw dev wlan0 vendor recv 0x001374 0x93 -
-        ```
+    ```bash
+    echo -n -e '\x08\x55\x31\x0a\xd6\xe0' | iw dev wlan0 vendor recv 0x001374 0x93 -
+    ```
 3. You should be able to get the output from dmesg:
 
     **AoA**
