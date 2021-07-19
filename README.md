@@ -131,17 +131,19 @@ Features:
 2. Flash it
 
     ```bash
-    /sbin/sysupgrade sysupgrade.bin
+    /sbin/sysupgrade /tmp/sysupgrade.bin
     ```
 3. Wait until ssh works again (around 5 minutes)
 
 ### How to start the AP and STA
 
 1. In the STA
+
     ```bash
     wpa_supplicant -D nl80211  -i wlan0 -c /etc/wpa_supplicant.conf -B
     ```
 2. In the AP
+
     ```bash
     hostapd -B /etc/hostapd.conf
     ```
@@ -156,11 +158,13 @@ To modify the SSID or password, modify both conf files.
 2. From the STA issue any of the following commands:
 
     **ToF**
+    
         ```bash
         echo -n -e '\x08\x55\x31\x0a\xd6\xe0' | iw dev wlan0 vendor recv 0x001374 0x81 -
         ```
 
     **AoA**
+    
         ```bash
         echo -n -e '\x08\x55\x31\x0a\xd6\xe0' | iw dev wlan0 vendor recv 0x001374 0x93 -
         ```
@@ -172,6 +176,7 @@ To modify the SSID or password, modify both conf files.
     [   60.374532] [AOA] Measurement: 0,1579846557.489942,08:55:31:0a:d6:e0,2,1,2,0,128,620,260,41,402,638,785,509,45,470,52,38,204,999,205,371,337,590,793,256,298,925,562,524,482,606,717,59,137,580,627,912,383,29,41,38,36,29,68,27,17,40,33,58,99,33,41,22,18,27,44,47,30,44,18,46,53,45,23,38,49,27,30,38,12
     ```
     The values are:
+    
         * Return code, should always be 0
         * Time of the measurement as measured by the driver
         * Peer MAC
