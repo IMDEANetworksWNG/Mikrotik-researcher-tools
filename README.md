@@ -177,16 +177,16 @@ To modify the SSID or password, modify both conf files.
     ```
     The values are:
     
-        * Return code, should always be 0
-        * Time of the measurement as measured by the driver
-        * Peer MAC
-        * Channel, should be 2
-        * Measurement type, should be 1
-        * Rf mask, should be 2
-        * Measurement status, should be 0
-        * Length
-        * The 32 next values are the phase (value between 0 and 1024)
-        * The 32 next values are the magnitude
+    * Return code, should always be 0
+    * Time of the measurement as measured by the driver
+    * Peer MAC
+    * Channel, should be 2
+    * Measurement type, should be 1
+    * Rf mask, should be 2
+    * Measurement status, should be 0
+    * Length
+    * The 32 next values are the phase (value between 0 and 1024)
+    * The 32 next values are the magnitude
 
     **ToF**
     ```
