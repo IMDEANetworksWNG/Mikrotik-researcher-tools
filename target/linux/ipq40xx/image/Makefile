@@ -273,13 +273,13 @@ define Device/MikrotikNOR
 	DEVICE_PACKAGES := rbcfg
 endef
 
-define Device/mikrotik_lhgg-60ad
+define Device/mikrotik_mikrotik-60ad
 	$(call Device/MikrotikNOR)
-	DEVICE_DTS := qcom-ipq4019-lhgg-60ad
-	DEVICE_TITLE := MikroTik Wireless Wire Dish LHGG-60ad
+	DEVICE_DTS := qcom-ipq4019-mikrotik-60ad
+	DEVICE_TITLE := MikroTik 60ad
 	DEVICE_PACKAGES += -kmod-ath10k-ct -ath10k-firmware-qca4019-ct kmod-wil6210 rssileds iperf3 tcpdump iw-full
 endef
-TARGET_DEVICES += mikrotik_lhgg-60ad
+TARGET_DEVICES += mikrotik_mikrotik-60ad
 
 define Device/netgear_ex61x0v2
 	$(call Device/DniImage)

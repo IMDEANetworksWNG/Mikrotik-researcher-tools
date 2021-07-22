@@ -21,8 +21,8 @@
 #include <dt-bindings/soc/qcom,tcsr.h>
 
 / {
-	model = "Mikrotik RouterBOARD LHGG-60ad";
-	compatible = "mikrotik,lhgg-60ad";
+	model = "Mikrotik 60ad";
+	compatible = "mikrotik,mikrotik-60ad";
 
 	memory {
 		device_type = "memory";
@@ -104,39 +104,39 @@
 		compatible = "gpio-leds";
 
 		power: power {
-			label = "lhgg-60ad:blue:power";
+			label = "mikrotik-60ad:blue:power";
 			gpios = <&tlmm 0 GPIO_ACTIVE_HIGH>;
 			default-state = "keep";
 			panic-indicator;
 		};
 
 		user: user {
-			label = "lhgg-60ad:yellow:user";
+			label = "mikrotik-60ad:yellow:user";
 			gpios = <&tlmm 3 GPIO_ACTIVE_HIGH>;
 		};
 
 		wlan {
-			label = "lhgg-60ad:green:wlan";
+			label = "mikrotik-60ad:green:wlan";
 			gpios = <&tlmm 58 GPIO_ACTIVE_HIGH>;
 		};
 
 		align-left {
-			label = "lhgg-60ad:green:align-left";
+			label = "mikrotik-60ad:green:align-left";
 			gpios = <&tlmm 1 GPIO_ACTIVE_HIGH>;
 		};
 
 		align-right {
-			label = "lhgg-60ad:green:align-right";
+			label = "mikrotik-60ad:green:align-right";
 			gpios = <&tlmm 2 GPIO_ACTIVE_HIGH>;
 		};
 
 		wlan-rx {
-			label = "lhgg-60ad:green:wlan-rx";
+			label = "mikrotik-60ad:green:wlan-rx";
 			gpios = <&tlmm 4 GPIO_ACTIVE_HIGH>;
 		};
 
 		wlan-tx {
-			label = "lhgg-60ad:green:wlan-tx";
+			label = "mikrotik-60ad:green:wlan-tx";
 			gpios = <&tlmm 5 GPIO_ACTIVE_HIGH>;
 		};
 	};
