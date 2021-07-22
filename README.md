@@ -117,6 +117,17 @@ Features:
     **NOTE:** Alternatively if you skipped step 1, you can unplug the device, press the reset button next to the ethernet port with a pen and plug it again while maintaining the reset button. Keep the button pressed until you see the first BOOTP requests in WireShark.
 
 9. Wait for the process to finish (should take around 2 minutes), you can check with Wireshark
+    1. You should first see the BOOTP petitions
+    ![BOOTP](repo_figures/bootp.png?raw=true "BOOTP")
+    2. If the TFTP protocol has not started restart the DHCP server
+    ```
+    sudo systemctl restart isc-dhcp-server
+    ```
+    3. If everything works correctly you will see the TFTP petitions
+    ![TFTP](repo_figures/tftp.png?raw=true "TFTP")
+    4. Wait until they are done
+
+
 10. You should be able to connect to the device on the IP 192.168.1.1 with user root and no password
 11. Stop the DHCP server and the TFTP server to make your sysadmin happy
     ```bash
