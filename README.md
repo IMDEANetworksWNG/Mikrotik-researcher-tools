@@ -4,10 +4,10 @@
 
 Features:
 
-* Comes patched with all the features from [LEDE-ad7200](https://github.com/seemoo-lab/lede-ad7200)
-* Imported the wil6210.fw (version 5.2.0.18) with sector information by default compiled with [nexmon-arc](https://github.com/seemoo-lab/nexmon-arc)
-* Mikrotik brd file from Mikrotik OS version 6.43.12
+* MikroTik brd file from MikroTik OS version 6.43.12
 * iperf3 is installed by default
+* FTM collection is enabled by default
+* CSI collection is enabled by default
 
 **NOTE:** You can download the prebuilt images and skip the "How to build from source" section, prebuilt images can be found [here.](https://github.com/IMDEANetworksWNG/Mikrotik-researcher-tools/releases)
 
