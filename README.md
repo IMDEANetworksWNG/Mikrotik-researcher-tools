@@ -134,29 +134,7 @@ Features:
     sudo /etc/init.d/isc-dhcp-server stop
     sudo /etc/init.d/tftpd-hpa stop
     ```
-12. Now we need the correct wil6210.fw, this firmware is in charge of the antenna, download the package [all_packages-arm-6.40.9.zip](https://download.mikrotik.com/routeros/6.40.9/all_packages-arm-6.40.9.zip) from the official MikroTik webpage
-13. Extract it
-14. Now we need to extract everything in the wireless-6.40.9-arm.npk binary
-    ```
-    binwalk -e wireless-6.40.9-arm.npk
-    ```
-15. This will create a new folder
-    ```
-    cd _wireless-6.40.9-arm.npk.extracted/squashfs-root/lib/firmware/
-    ```
-16. Check the md5 hash of the wil6210-d0.fw, it should be the following
-
-    ```
-    ae5ef66644ea08811f1b6269662f12b3  wil6210-d0.fw
-    ```
-17. Upload it to the device
-
-```
-scp wil6210-d0.fw root@192.168.1.1:/lib/firmware
-```
-
-18. Restart the device and everythign should be working
-
+    
 ### How to make the flash permanent
 
 1. Once flashed with the initramfs upload the sysupgrade file
@@ -170,6 +148,29 @@ scp wil6210-d0.fw root@192.168.1.1:/lib/firmware
     /sbin/sysupgrade /tmp/sysupgrade.bin
     ```
 3. Wait until ssh works again (around 5 minutes)
+
+4. Now we need the correct wil6210.fw, this firmware is in charge of the antenna, download the package [all_packages-arm-6.40.9.zip](https://download.mikrotik.com/routeros/6.40.9/all_packages-arm-6.40.9.zip) from the official MikroTik webpage
+5. Extract it
+6. Now we need to extract everything in the wireless-6.40.9-arm.npk binary
+    ```
+    binwalk -e wireless-6.40.9-arm.npk
+    ```
+7. This will create a new folder
+    ```
+    cd _wireless-6.40.9-arm.npk.extracted/squashfs-root/lib/firmware/
+    ```
+8. Check the md5 hash of the wil6210-d0.fw, it should be the following
+
+    ```
+    ae5ef66644ea08811f1b6269662f12b3  wil6210-d0.fw
+    ```
+9. Upload it to the device
+
+```
+scp wil6210-d0.fw root@192.168.1.1:/lib/firmware
+```
+
+10. Restart the device and everythign should be working
 
 ### How to start the AP and STA
 
@@ -206,9 +207,9 @@ To modify the SSID or password, modify both conf files. You can also remove the 
     ```
 3. You should be able to get the output from dmesg:
 
-    **AoA**
+    **CSI**
     ```
-    # Example of AoA result
+    # Example of CSI result
     [   60.374532] [AOA] Measurement: 0,1579846557.489942,08:55:31:0a:d6:e0,2,1,2,0,128,620,260,41,402,638,785,509,45,470,52,38,204,999,205,371,337,590,793,256,298,925,562,524,482,606,717,59,137,580,627,912,383,29,41,38,36,29,68,27,17,40,33,58,99,33,41,22,18,27,44,47,30,44,18,46,53,45,23,38,49,27,30,38,12
     ```
     The values are:
@@ -224,9 +225,9 @@ To modify the SSID or password, modify both conf files. You can also remove the 
     * The 32 next values are the phase (value between 0 and 1024)
     * The 32 next values are the magnitude
 
-    **ToF**
+    **FTM**
     ```
-    # Example of ToF measurement
+    # Example of FTM measurement
     [ 1281.744417] wil6210 0000:01:00.0 wlan0: wil_ftm_evt_per_dest_res: [FTM] Measurement: 1663086492, 257349564, 266483712, 1674073524
     ```
 
@@ -323,7 +324,7 @@ config interface 'lan'
 
 ```
 # Empty the data file
-echo "" > /tmp/aoa_measurements.txt
+echo "" > /tmp/csi_measurements.txt
 
 # Reset the interface
 ip link set dev wlan0 down
@@ -359,7 +360,7 @@ while true ; do  # Loop until connected
     sleep 1
 done
 
-echo "[AoA] We are connected now"
+echo "[CSI] We are connected now"
 
 # A counter
 i=0
@@ -372,19 +373,19 @@ while true ; do  # Loop until interval has elapsed.
     echo -n -e '\xaa\xaa\xaa\xaa\xaa\xaa' | iw dev wlan0 vendor recv 0x001374 0x93 -
 
     # Save the measurement
-    echo $(dmesg | tail -n1) >> /tmp/aoa_measurements.txt
+    echo $(dmesg | tail -n1) >> /tmp/csi_measurements.txt
 
     i=$((i+1))
 
     # Break when no connected
     if [[ $connected -eq 0 ]]; then
-      echo "[AoA] We got " $i "measurements" 
+      echo "[CSI] We got " $i "measurements" 
       break
     fi
 
     # Break after a certain number of measurements
     if [[ $i -eq 300 ]]; then
-      echo "[AoA] We got 300 measurements"
+      echo "[CSI] We got 300 measurements"
       break
     fi
 
@@ -397,7 +398,7 @@ done
 
 ```
 # Empty the file
-echo "" > /tmp/tof_measurements.txt
+echo "" > /tmp/ftm_measurements.txt
 
 # Total number of measurements
 total_measurements=0
@@ -438,7 +439,7 @@ while true; do
     if [[ $retries -eq 10 ]]; then
 
         echo "There is no connection"
-        echo "Unreachable" >> /tmp/tof_measurements.txt
+        echo "Unreachable" >> /tmp/ftm_measurements.txt
         break
     fi
 
@@ -446,8 +447,8 @@ while true; do
 
     if [[ $total_retries -eq 10 ]]; then
 
-        echo "There is no ToF for a long time"
-        echo "Unreachable" >> /tmp/tof_measurements.txt
+        echo "There is no FTM for a long time"
+        echo "Unreachable" >> /tmp/ftm_measurements.txt
         break
     fi
 
@@ -463,7 +464,7 @@ while true; do
         if [[ $num_measurements -gt 0 ]]; then
       
             # Save the measurements
-            echo "$(dmesg -c | grep Measurement)" >> /tmp/tof_measurements.txt
+            echo "$(dmesg -c | grep Measurement)" >> /tmp/ftm_measurements.txt
 
             # Increment the number of measurements
             total_measurements=$((total_measurements+num_measurements))
