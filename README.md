@@ -167,7 +167,7 @@ Features:
 9. Upload it to the device
 
 ```
-scp wil6210-d0.fw root@192.168.1.1:/lib/firmware
+scp wil6210-d0.fw root@192.168.1.1:/lib/firmware/wil6210.fw
 ```
 
 10. Restart the device and everythign should be working
